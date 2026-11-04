@@ -1,0 +1,17 @@
+# Credenciais e configurações locais (nunca enviar ao GitHub)
+.env
+.env.local
+
+# Bibliotecas baixadas pelo npm
+node_modules/
+
+# Arquivos gerados automaticamente
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Arquivos do sistema e do editor
+.DS_Store
+Thumbs.db
+.vscode/
