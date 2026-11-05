@@ -1,5 +1,5 @@
 import express from 'express';
-import { fazerLogin } from './sankhya.js';
+import { fazerLogin, consultarSql} from './sankhya.js';
 
 const app = express();
 const PORTA = 3000;
@@ -10,13 +10,17 @@ app.get('/status', (req, res) => {
 });
 
 // Rota de teste do login no Sankhya
-app.get('/sankhya/teste', async (req, res) => {
+app.get('/sankhya/teste-sql', async (req, res) => {
   try {
-    const dados = await fazerLogin();
-    // Mostra só os NOMES dos campos, nunca o token em si
-    res.json({ ok: true, camposRecebidos: Object.keys(dados) });
+    const linhas = await consultarSql("SELECT SYSDATE AS AGORA FROM DUAL");
+    res.json({ ok: true, linhas });
   } catch (erro) {
-    res.status(500).json({ ok: false, erro: erro.message });
+    console.error('Erro na consulta', erro);
+    res.status(500).json({ 
+      ok: false,
+      erro: erro.message,
+      motivo: erro.cause?.message
+    });
   }
 });
 

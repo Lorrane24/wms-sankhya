@@ -25,3 +25,55 @@ export async function fazerLogin() {
 
   return dados;
 }
+
+// Token guardado na memória
+let tokenGuardado = null;
+let venceEm = 0;
+
+export async function obterToken() {
+  const agora = Date.now();
+
+  if (tokenGuardado && agora < venceEm - 60_000) { // ✅ era 60_600
+    return tokenGuardado;
+  }
+
+  const dados = await fazerLogin();
+  tokenGuardado = dados.access_token; // ✅ era acess_token (faltava um "c")
+  venceEm = agora + dados.expires_in * 1000;
+  return tokenGuardado;
+}
+
+// Consulta SQL no banco de dados do Sankhya
+const SERVICO_SQL = '/gateway/v1/mge/service.sbr?serviceName=DbExplorerSP.executeQuery&outputType=json'; // ✅ tinha um espaço antes de .executeQuery
+
+export async function consultarSql(sql) {
+  const token = await obterToken();
+
+  const resposta = await fetch(`${URL_SANKHYA}${SERVICO_SQL}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      serviceName: 'DbExplorerSP.executeQuery',
+      requestBody: { sql }, // ✅ era requestBodt
+    }),
+  });
+
+  const dados = await resposta.json();
+
+  if (!resposta.ok || String(dados.status) !== '1') {
+    throw new Error(`Consulta no Sankhya falhou: ${dados.statusMessage ?? JSON.stringify(dados)}`);
+  }
+
+  const colunas = dados.responseBody.fieldsMetadata.map((campo) => campo.name); // ✅ era ressponseBody e fieldsMetada
+
+  return dados.responseBody.rows.map((linha) => {
+    const objeto = {};
+    colunas.forEach((coluna, posicao) => {
+      objeto[coluna] = linha[posicao];
+    });
+    return objeto;
+  });
+}
