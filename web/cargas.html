@@ -1,64 +1,118 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conferencia</title>
+    <title>Cargas · Conferência de Carga</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
-    <aside>
-     <header>
-       <img src="Cargas1.png" alt="Cargas1"
-       <strong>Conferencia de Carga</strong>
-       <span>Romaneios (ordens de carga) do Sankhya.Escolha a carga e clique em Conferir.</span>
-       </header>
 
-     <nav>
-      <a href="cargas.html">Cargas</a>
-      <a href="painel.html">Painel</a>
-      <a href="historico.html">Histórico</a>
-      <a href="cortes.html">Cortes</a>
-      <a href="faturamento.html">Faturamento</a>
-      <a href="mapas.html">Mapas</a>
-      <a href="relatorios.html">Relatórios</a>
-    </nav>
-
-    <nav>
-      <a href="personalizacao.html">Personalização</a>
-      <a href="como-usar.html">Como usar</a>
-      <a href="tour.html">Tour guiado</a>
-    </nav>
-  </aside>
-
-  <main >
-    <header>
-        <h1>Cargas</h1>
-        <p>Romaneios (ordens de carga) do Sankhya. Escolha a carga e clique em Conferir.</p>
-        <button id="botao-atualizar">Atualizar</button>
+    <!-- BARRA DE TOPO (no celular) -->
+    <header class="topo">
+        <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
+        <strong>Conferência de Carga</strong>
     </header>
-     <div>
-      <strong>Modo teste:</strong> as cargas vêm da base de teste do Sankhya.
-    </div>
 
-   <form id="form-busca">
-      <label for="data-inicio">De</label>
-      <input type="date" id="data-inicio">
+    <!-- MENU LATERAL (no celular, abre pelo ☰) -->
+    <aside id="menu" class="menu">
+        <div class="menu-marca">
+            <strong>Conferência de Carga</strong>
+            <span>Romaneios do Sankhya</span>
+        </div>
+        <nav>
+            <a href="cargas.html" aria-current="page">Cargas</a>
+            <a href="cortes.html">Cortes</a>
+            <a href="faturamento.html">Faturamento</a>
+        </nav>
+    </aside>
 
-      <label for="data-fim">Até</label>
-      <input type="date" id="data-fim">
+    <main class="conteudo">
 
-      <label for="numero-carga">Nº da carga</label>
-      <input id="numero-carga" placeholder="Ex.: 10302">
-      <button type="submit">Buscar</button>
-          </form>
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header class="cabecalho">
+            <h1>Cargas</h1>
+            <p>Romaneios (ordens de carga) do Sankhya. Escolha a carga e clique em Abrir.</p>
+            <button id="botao-atualizar" type="button" class="botao botao-contorno">↻ Atualizar</button>
+        </header>
 
-      <section id="lista-cargas"
-       <h2>Nehuma Carga no periodo</h2>
-       <p>Amplie as datas ou digite o numero da carga para procurar direito</p>
+        <!-- AVISO -->
+        <div class="aviso">
+            <strong>Modo teste:</strong> as cargas vêm da base de teste do Sankhya. A produção não é lida nem alterada.
+        </div>
 
-       </section>
+        <!-- BUSCA -->
+        <form id="form-busca" class="cartao busca">
+            <div class="campo">
+                <label for="data-inicio">De</label>
+                <input type="date" id="data-inicio">
+            </div>
+            <div class="campo">
+                <label for="data-fim">Até</label>
+                <input type="date" id="data-fim">
+            </div>
+            <div class="campo campo-inteiro">
+                <label for="numero-carga">Nº da carga</label>
+                <input id="numero-carga" placeholder="Ex.: 10302">
+            </div>
+            <button type="submit" class="botao botao-principal campo-inteiro">Buscar</button>
+        </form>
 
-  </main>
- 
+        <!-- AÇÕES -->
+        <div class="acoes">
+            <label class="marcar-todas">
+                <input type="checkbox" id="marcar-todas"> Marcar todas
+            </label>
+            <button id="botao-faturar" type="button" class="botao botao-principal" disabled>
+                Faturar <span id="total-selecionadas">0</span> carga(s)
+            </button>
+        </div>
+
+        <!-- LISTA DE CARGAS -->
+        <section id="lista-cargas">
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Carga</th>
+                        <th>Data</th>
+                        <th>Veículo / motorista</th>
+                        <th>Pedidos</th>
+                        <th>Clientes</th>
+                        <th>Situação</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Carga de exemplo -->
+                    <tr>
+                        <td><input type="checkbox" aria-label="Selecionar carga 9022"></td>
+                        <td data-label="Carga"><strong>9022</strong> <small>PARACATU</small></td>
+                        <td data-label="Data">29/10/2026</td>
+                        <td data-label="Veículo / motorista">VW 8.150 · GHI-7J89 <small>Sem motorista</small></td>
+                        <td data-label="Pedidos">19</td>
+                        <td data-label="Clientes">10</td>
+                        <td data-label="Situação"><span class="situacao conferida">Conferida</span></td>
+                        <td class="celula-acoes">
+                            <a href="conferencia.html?carga=9022" class="botao botao-contorno">Abrir →</a>
+                            <!-- Opcional: imprimir documentos da carga -->
+                            <button type="button" class="botao-texto">Separação</button>
+                            <button type="button" class="botao-texto">Mapa</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Aparece quando: a busca não encontra nenhuma carga -->
+        <div id="nenhuma-carga" class="cartao vazio" hidden>
+            <h2>Nenhuma carga no período</h2>
+            <p>Amplie as datas ou digite o número da carga para procurar direto.</p>
+        </div>
+
+    </main>
+
 </body>
 </html>

@@ -1,0 +1,430 @@
+/* As cores e medidas do sistema */
+:root {
+    --azul: #1E4FA3;
+  --azul-escuro: #163B7A;
+  --azul-claro: #E8EFFB;
+  --fundo: #F3F5F9;
+  --branco: #FFFFFF;
+  --texto: #0F172A;
+  --texto-fraco: #475569;
+  --borda: #D5DCE8;
+  --raio: 14px;
+}
+
+/*Ajuste geral de todos os elementos */
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding:0
+}
+
+/*A pagina inteira */
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 60px;
+  padding: 0 12px;
+  background: var(--branco);
+  border-bottom: 1px solid var(--borda);
+  position: sticky;   /* fica presa no topo ao rolar a tela */
+  top: 0;
+  z-index: 10;
+}
+
+
+.topo button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 22px;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background: var(--branco);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
+  padding: 20px 12px;
+  transform: translateX(-100%);   /* empurra o menu para fora da tela */
+  transition: transform 0.25s;    /* anima a entrada */
+  z-index: 20;
+}
+
+/* Quando o JavaScript colocar a classe "aberto", o menu aparece */
+.menu.aberto {
+  transform: translateX(0);
+}
+.menu-marca {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px 20px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.menu-marca span {
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+.menu nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu nav a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--texto);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* A aba da tela atual */
+.menu nav a[aria-current="page"] {
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+
+.conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cabecalho h1 {
+  font-size: 26px;
+  font-weight: 700;
+}
+.cabecalho p {
+  color: var(--texto-fraco);
+  font-size: 15px;
+}
+
+.cabecalho .botao {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.aviso {
+  padding: 12px 14px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--branco);
+  font-size: 14px;
+}
+.cartao {
+  background: var(--branco);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 16px;
+}
+
+.busca {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);   /* duas colunas iguais */
+  gap: 12px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.campo input {
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;   /* usa a mesma fonte do body */
+  font-size: 16px;
+  color: var(--texto);
+  background: var(--branco);
+}
+
+/* Quando o campo está selecionado */
+.campo input:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--azul-claro);
+}
+
+/* Ocupa a linha toda: da primeira até a última coluna */
+.campo-inteiro {
+  grid-column: 1 / -1;
+}
+
+.busca {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);   /* duas colunas iguais */
+  gap: 12px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.campo input {
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;   /* usa a mesma fonte do body */
+  font-size: 16px;
+  color: var(--texto);
+  background: var(--branco);
+}
+
+/* Quando o campo está selecionado */
+.campo input:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--azul-claro);
+}
+
+/* Ocupa a linha toda: da primeira até a última coluna */
+.campo-inteiro {
+  grid-column: 1 / -1;
+}
+
+
+.acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marcar-todas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-weight: 600;
+}
+
+/* Todos os checkboxes do sistema */
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--azul);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;   /* junta as bordas das células */
+}
+
+/* Esconde a linha de títulos no celular */
+.tabela thead {
+  display: none;
+}
+
+/* Cada linha vira um cartão */
+.tabela tr {
+  display: block;
+  background: var(--branco);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 8px 16px;
+  margin-bottom: 12px;
+}
+
+/* Cada célula: nome à esquerda, valor à direita */
+.tabela td {
+  display: block;
+  text-align: right;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--fundo);
+}
+
+/* O nome da coluna, que vem do data-label */
+.tabela td::before {
+  content: attr(data-label);
+  float: left;
+  font-size: 14px;
+  color: var(--texto-fraco);
+}
+
+/* A primeira célula (o checkbox) fica à esquerda */
+.tabela td:first-child {
+  text-align: left;
+}
+
+/* O texto pequeno (cidade, motorista) embaixo do valor */
+.tabela small {
+  display: block;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+/* A célula dos botões: Abrir na largura toda e os outros embaixo */
+.celula-acoes {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  border-bottom: none !important;
+}
+
+.celula-acoes .botao {
+  width: 100%;
+}
+
+
+.situacao {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;   /* formato de pílula */
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.situacao.pendente   { background: #E2E8F0; color: #334155; }
+.situacao.conferindo { background: #DBE7FF; color: #163B7A; }
+.situacao.conferida  { background: #DCF5E6; color: #14532D; }
+.situacao.faturada   { background: #EDE7FB; color: #4C1D95; }
+
+/* Mensagem de "nenhuma carga" */
+.vazio {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.vazio p {
+  color: var(--texto-fraco);
+}
+
+@media (min-width: 768px) {
+
+  /* Página em duas colunas: menu à esquerda e conteúdo à direita */
+  body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+  }
+
+  /* A barra de topo some: o menu já fica sempre aparecendo */
+  .topo {
+    display: none;
+  }
+
+  .menu {
+    position: sticky;
+    transform: none;
+    height: 100vh;
+    box-shadow: none;
+    border-right: 1px solid var(--borda);
+  }
+
+  .conteudo {
+    padding: 32px;
+    max-width: 1200px;
+  }
+
+  .cabecalho .botao {
+    width: auto;
+    align-self: flex-start;
+  }
+
+  /* Busca toda em uma linha */
+  .busca {
+    grid-template-columns: 1fr 1fr 1fr auto;
+    align-items: end;
+  }
+
+  .campo-inteiro {
+    grid-column: auto;
+  }
+
+  .acoes {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* A tabela volta a ser tabela */
+  .tabela {
+    background: var(--branco);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+  }
+
+  .tabela thead {
+    display: table-header-group;
+  }
+
+  .tabela tr {
+    display: table-row;
+    box-shadow: none;
+  }
+
+  .tabela th,
+  .tabela td {
+    display: table-cell;
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--fundo);
+    vertical-align: middle;
+  }
+
+  .tabela th {
+    font-size: 13px;
+    color: var(--texto-fraco);
+  }
+
+  .tabela td::before {
+    content: none;   /* esconde o nome da coluna: o título já aparece em cima */
+  }
+
+  .celula-acoes {
+    display: table-cell !important;
+    white-space: nowrap;
+  }
+
+  .celula-acoes .botao {
+    width: auto;
+  }
+}

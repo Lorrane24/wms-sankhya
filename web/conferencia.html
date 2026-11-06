@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conferência · Conferência de Carga</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- BARRA DE TOPO (no celular) -->
+    <header class="topo">
+        <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
+        <strong>Conferência de Carga</strong>
+    </header>
+
+    <!-- MENU LATERAL -->
+    <aside id="menu" class="menu">
+        <div class="menu-marca">
+            <strong>Conferência de Carga</strong>
+            <span>Romaneios do Sankhya</span>
+        </div>
+        <nav>
+            <a href="cargas.html" aria-current="page">Cargas</a>
+            <a href="cortes.html">Cortes</a>
+            <a href="faturamento.html">Faturamento</a>
+        </nav>
+    </aside>
+
+    <main class="conteudo">
+
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header class="cabecalho">
+            <a href="cargas.html" class="voltar">← Cargas</a>
+            <h1 id="titulo-carga">Carga 9022</h1>
+            <p id="detalhe-carga">VW 8.150 · GHI-7J89 · 10 pedido(s)</p>
+            <button id="botao-imprimir" type="button" class="botao botao-principal">Imprimir / PDF</button>
+        </header>
+
+        <!-- AVISO -->
+        <div class="aviso">
+            <strong>Modo teste:</strong> esta conferência e os cortes usam a base de teste do Sankhya. A produção não é alterada.
+        </div>
+
+        <!-- BIPAR -->
+        <!-- Aparece quando: a conferência está aberta -->
+        <form id="form-bipar" class="cartao bipar">
+            <label for="campo-bipar">Bipe ou digite o código</label>
+            <div class="bipar-linha">
+                <input id="campo-bipar" placeholder="Código de barras" autofocus>
+                <button type="submit" class="botao botao-principal">OK</button>
+            </div>
+            <!-- Aparece quando: um código é lido -->
+            <p id="ultimo-lido" class="ultimo-lido">✓ +1 ALGEMIX AMEIXA PRETA 1KG MF</p>
+        </form>
+
+        <!-- RESUMO -->
+        <section class="resumo-conferencia" aria-label="Resumo da conferência">
+            <div class="cartao numero">
+                <span>Itens corretos</span>
+                <strong id="total-corretos">11</strong>
+            </div>
+            <div class="cartao numero atencao">
+                <span>Faltando</span>
+                <strong id="total-faltando">1</strong>
+            </div>
+            <div class="cartao numero">
+                <span>Sobrando</span>
+                <strong id="total-sobrando">1</strong>
+            </div>
+            <div class="cartao numero">
+                <span>Fora da carga</span>
+                <strong id="total-fora">0</strong>
+            </div>
+        </section>
+
+        <!-- Aparece quando: a conferência está finalizada -->
+        <div id="conferencia-finalizada" class="cartao finalizada" hidden>
+            <p><strong>1 produto(s) com diferença.</strong> Finalizada em 06/11/2026 11:30 por conferente.exemplo</p>
+            <button type="button" class="botao botao-contorno">Reabrir para recontar</button>
+        </div>
+
+        <!-- ITENS DA CARGA -->
+        <section id="itens-carga">
+            <h2>Itens da carga</h2>
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Unidade</th>
+                        <th>Romaneio</th>
+                        <th>Contado</th>
+                        <th>Diferença</th>
+                        <th>Situação</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Item de exemplo: com falta -->
+                    <tr>
+                        <td data-label="Produto"><strong>ALGEMIX CHOC BRANCO 1KG MF</strong> <small>Código 13</small></td>
+                        <td data-label="Unidade">PT</td>
+                        <td data-label="Romaneio">4</td>
+                        <td data-label="Contado">3</td>
+                        <td data-label="Diferença">-1</td>
+                        <td data-label="Situação"><span class="situacao falta">Falta</span></td>
+                        <td class="celula-acoes">
+                            <!-- Aparece quando: o item tem falta -->
+                            <button type="button" class="botao botao-contorno">✂ Cortar no pedido</button>
+                        </td>
+                    </tr>
+                    <!-- Item de exemplo: com sobra -->
+                    <tr>
+                        <td data-label="Produto"><strong>CHOCOLATE EM PÓ 1KG</strong> <small>Código 205</small></td>
+                        <td data-label="Unidade">PT</td>
+                        <td data-label="Romaneio">5</td>
+                        <td data-label="Contado">6</td>
+                        <td data-label="Diferença">+1</td>
+                        <td data-label="Situação"><span class="situacao sobra">Sobra</span></td>
+                        <td class="celula-acoes"></td>
+                    </tr>
+                    <!-- Item de exemplo: correto, com corte anterior -->
+                    <tr>
+                        <td data-label="Produto"><strong>ALGEMIX ABACAXI 1KG MF</strong> <small>Código 4409</small></td>
+                        <td data-label="Unidade">PT</td>
+                        <td data-label="Romaneio">0 <small>já cortado 3</small></td>
+                        <td data-label="Contado">0</td>
+                        <td data-label="Diferença">0</td>
+                        <td data-label="Situação"><span class="situacao ok">OK</span></td>
+                        <td class="celula-acoes"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- CORTES -->
+        <section id="cortes-carga" class="cartao">
+            <h2>Cortes no pedido</h2>
+            <ul class="lista-cortes">
+                <li>
+                    <strong>ALGEMIX ABACAXI 1KG MF · 3 un</strong>
+                    <span>Pedido 2039940 · Cliente Exemplo 1 · 29/10/2026 19:18</span>
+                    <span>por conferente.exemplo</span>
+                </li>
+                <li>
+                    <strong>ALGEMIX CHOC BRANCO C/ MALTE 1KG MF · 1 un</strong>
+                    <span>Pedido 2039946 · Cliente Exemplo 2 · 29/10/2026 19:28</span>
+                    <span>por conferente.exemplo</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- FINALIZAR -->
+        <!-- Aparece quando: a conferência está aberta -->
+        <div class="rodape-acao">
+            <button id="botao-finalizar" type="button" class="botao botao-principal">Finalizar conferência</button>
+            <p>Ainda há 1 item faltando</p>
+        </div>
+
+    </main>
+
+</body>
+</html>
