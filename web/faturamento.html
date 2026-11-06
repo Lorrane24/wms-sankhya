@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faturamento · Conferência de Carga</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="topo">
+        <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
+        <strong>Conferência de Carga</strong>
+    </header>
+
+    <aside id="menu" class="menu">
+        <div class="menu-marca">
+            <strong>Conferência de Carga</strong>
+            <span>Romaneios do Sankhya</span>
+        </div>
+        <nav>
+            <a href="cargas.html">Cargas</a>
+            <a href="cortes.html">Cortes</a>
+            <a href="faturamento.html" aria-current="page">Faturamento</a>
+        </nav>
+    </aside>
+
+    <main class="conteudo">
+
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header class="cabecalho">
+            <h1>Faturamento</h1>
+            <p>Marque as cargas, uma por uma ou todas de uma vez, e fature cada carga inteira.</p>
+        </header>
+
+        <div class="aviso">
+            <strong>Modo teste:</strong> o faturamento usa a base de teste do Sankhya. A produção não é alterada.
+        </div>
+
+        <!-- BUSCA -->
+        <form id="form-busca-faturamento" class="cartao busca">
+            <div class="campo">
+                <label for="fat-data-inicio">De</label>
+                <input type="date" id="fat-data-inicio">
+            </div>
+            <div class="campo">
+                <label for="fat-data-fim">Até</label>
+                <input type="date" id="fat-data-fim">
+            </div>
+            <div class="campo campo-inteiro">
+                <label for="fat-numero-carga">Nº da carga</label>
+                <input id="fat-numero-carga" placeholder="Ex.: 10302">
+            </div>
+            <button type="submit" class="botao botao-principal campo-inteiro">Buscar</button>
+        </form>
+
+        <!-- AÇÕES -->
+        <div class="acoes">
+            <label class="marcar-todas">
+                <input type="checkbox" id="fat-marcar-todas"> Marcar todas
+            </label>
+            <button id="botao-faturar" type="button" class="botao botao-principal">
+                Faturar <span id="fat-total-selecionadas">1</span> carga(s)
+            </button>
+        </div>
+
+        <!-- LISTA DE CARGAS -->
+        <section id="lista-faturamento">
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Carga</th>
+                        <th>Data</th>
+                        <th>Veículo / motorista</th>
+                        <th>Pedidos</th>
+                        <th>Clientes</th>
+                        <th>Conferência</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Carga de exemplo: conferida e marcada -->
+                    <tr>
+                        <td><input type="checkbox" checked aria-label="Selecionar carga 9022"></td>
+                        <td data-label="Carga"><strong>9022</strong> <small>PARACATU</small></td>
+                        <td data-label="Data">29/10/2026</td>
+                        <td data-label="Veículo / motorista">VW 8.150 · GHI-7J89 <small>Sem motorista</small></td>
+                        <td data-label="Pedidos">19</td>
+                        <td data-label="Clientes">10</td>
+                        <td data-label="Conferência"><span class="situacao conferida">Conferida</span></td>
+                        <td class="celula-acoes">
+                            <a href="conferencia.html?carga=9022" class="botao botao-contorno">Ver</a>
+                        </td>
+                    </tr>
+                    <!-- Carga de exemplo: ainda não conferida -->
+                    <tr>
+                        <td><input type="checkbox" aria-label="Selecionar carga 9035"></td>
+                        <td data-label="Carga"><strong>9035</strong> <small>JOÃO PINHEIRO</small></td>
+                        <td data-label="Data">06/11/2026</td>
+                        <td data-label="Veículo / motorista">Iveco Daily · ABC-1D23 <small>Motorista Exemplo</small></td>
+                        <td data-label="Pedidos">7</td>
+                        <td data-label="Clientes">5</td>
+                        <td data-label="Conferência"><span class="situacao naoconferida">Não conferida</span></td>
+                        <td class="celula-acoes">
+                            <a href="conferencia.html?carga=9035" class="botao botao-contorno">Ver</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Aparece quando: a busca não encontra nada -->
+        <div id="fat-nenhuma-carga" class="cartao vazio" hidden>
+            <h2>Nenhuma carga no período</h2>
+            <p>Amplie as datas ou digite o número da carga.</p>
+        </div>
+
+    </main>
+
+    <!-- JANELA DE CONFIRMAÇÃO -->
+    <!-- Aparece quando: a pessoa clica em Faturar (no protótipo, coloque "open" para ver) -->
+    <dialog id="confirmar-faturamento" class="janela">
+        <h2>Faturar as cargas no Sankhya?</h2>
+        <p>Você vai faturar <strong>1 carga</strong> com <strong>19 pedidos</strong>.</p>
+        <p class="alerta">O faturamento gera as notas no Sankhya e não pode ser desfeito por aqui.</p>
+        <div class="janela-botoes">
+            <button type="button" class="botao botao-contorno">Cancelar</button>
+            <button type="button" class="botao botao-principal">Confirmar faturamento</button>
+        </div>
+    </dialog>
+
+</body>
+</html>

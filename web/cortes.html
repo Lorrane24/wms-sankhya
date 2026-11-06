@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortes · Conferência de Carga</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="topo">
+        <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
+        <strong>Conferência de Carga</strong>
+    </header>
+
+    <aside id="menu" class="menu">
+        <div class="menu-marca">
+            <strong>Conferência de Carga</strong>
+            <span>Romaneios do Sankhya</span>
+        </div>
+        <nav>
+            <a href="cargas.html">Cargas</a>
+            <a href="cortes.html" aria-current="page">Cortes</a>
+            <a href="faturamento.html">Faturamento</a>
+        </nav>
+    </aside>
+
+    <main class="conteudo">
+
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header class="cabecalho">
+            <h1>Cortes</h1>
+            <p>Itens cortados dos pedidos na conferência. Os que o app não consegue cortar sozinho ficam como "A fazer no Sankhya".</p>
+            <button id="botao-imprimir-cortes" type="button" class="botao botao-contorno">Imprimir cortes</button>
+        </header>
+
+        <!-- FILTROS -->
+        <form id="form-filtro-cortes" class="cartao busca">
+            <div class="campo">
+                <label for="filtro-situacao">Situação</label>
+                <select id="filtro-situacao">
+                    <option>Todos</option>
+                    <option>A fazer no Sankhya</option>
+                    <option>Feitos</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="filtro-carga">Carga</label>
+                <select id="filtro-carga">
+                    <option>Todas as cargas</option>
+                    <option>9022</option>
+                    <option>9031</option>
+                </select>
+            </div>
+        </form>
+
+        <!-- LISTA DE CORTES -->
+        <section id="lista-cortes">
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Carga</th>
+                        <th>Pedido</th>
+                        <th>Cliente</th>
+                        <th>Qtd. cortada</th>
+                        <th>Situação</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Corte de exemplo: a fazer no Sankhya -->
+                    <tr>
+                        <td data-label="Produto"><strong>ALGEMIX CHOC BRANCO 1KG MF</strong> <small>Código 13</small></td>
+                        <td data-label="Carga">9022</td>
+                        <td data-label="Pedido">2039946</td>
+                        <td data-label="Cliente">Cliente Exemplo 2</td>
+                        <td data-label="Qtd. cortada">1 PT</td>
+                        <td data-label="Situação"><span class="situacao afazer">A fazer no Sankhya</span></td>
+                        <td class="celula-acoes">
+                            <!-- Aparece quando: o corte ainda não foi feito -->
+                            <button type="button" class="botao botao-contorno">✓ Marcar como feito</button>
+                        </td>
+                    </tr>
+                    <!-- Corte de exemplo: feito -->
+                    <tr>
+                        <td data-label="Produto"><strong>ALGEMIX ABACAXI 1KG MF</strong> <small>Código 4409</small></td>
+                        <td data-label="Carga">9022</td>
+                        <td data-label="Pedido">2039940</td>
+                        <td data-label="Cliente">Cliente Exemplo 1</td>
+                        <td data-label="Qtd. cortada">3 PT</td>
+                        <td data-label="Situação"><span class="situacao feito">Feito</span></td>
+                        <td class="celula-acoes"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Aparece quando: não há nenhum corte -->
+        <div id="nenhum-corte" class="cartao vazio" hidden>
+            <h2>Nenhum corte aqui</h2>
+            <p>Os cortes aparecem quando o conferente usa "Cortar no pedido" na conferência.</p>
+        </div>
+
+    </main>
+
+</body>
+</html>

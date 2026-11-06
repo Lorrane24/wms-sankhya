@@ -1,6 +1,9 @@
-/* As cores e medidas do sistema */
+/* =========================================================
+   1. BASE
+   ========================================================= */
+
 :root {
-    --azul: #1E4FA3;
+  --azul: #1E4FA3;
   --azul-escuro: #163B7A;
   --azul-claro: #E8EFFB;
   --fundo: #F3F5F9;
@@ -9,17 +12,14 @@
   --texto-fraco: #475569;
   --borda: #D5DCE8;
   --raio: 14px;
+  --sombra: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
-/*Ajuste geral de todos os elementos */
-
-*{
-    box-sizing: border-box;
-    margin: 0;
-    padding:0
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-
-/*A pagina inteira */
 
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -28,7 +28,12 @@ body {
   color: var(--texto);
   background: var(--fundo);
 }
-
+[hidden] {
+  display: none !important;
+}
+/* =========================================================
+   2. BARRA DE TOPO
+   ========================================================= */
 
 .topo {
   display: flex;
@@ -38,11 +43,10 @@ body {
   padding: 0 12px;
   background: var(--branco);
   border-bottom: 1px solid var(--borda);
-  position: sticky;   /* fica presa no topo ao rolar a tela */
+  position: sticky;
   top: 0;
   z-index: 10;
 }
-
 
 .topo button {
   width: 44px;
@@ -55,6 +59,10 @@ body {
   cursor: pointer;
 }
 
+/* =========================================================
+   3. MENU LATERAL
+   ========================================================= */
+
 .menu {
   position: fixed;
   top: 0;
@@ -64,15 +72,15 @@ body {
   background: var(--branco);
   box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
   padding: 20px 12px;
-  transform: translateX(-100%);   /* empurra o menu para fora da tela */
-  transition: transform 0.25s;    /* anima a entrada */
+  transform: translateX(-100%);
+  transition: transform 0.25s;
   z-index: 20;
 }
 
-/* Quando o JavaScript colocar a classe "aberto", o menu aparece */
 .menu.aberto {
   transform: translateX(0);
 }
+
 .menu-marca {
   display: flex;
   flex-direction: column;
@@ -103,37 +111,71 @@ body {
   font-weight: 600;
 }
 
-/* A aba da tela atual */
 .menu nav a[aria-current="page"] {
   background: var(--azul-claro);
   color: var(--azul);
 }
 
+/* =========================================================
+   4. ÁREA DO CONTEÚDO
+   ========================================================= */
+
 .conteudo {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
 }
+
+/* =========================================================
+   5. CABEÇALHO DA PÁGINA
+   ========================================================= */
 
 .cabecalho {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
 .cabecalho h1 {
   font-size: 26px;
   font-weight: 700;
 }
+
 .cabecalho p {
   color: var(--texto-fraco);
   font-size: 15px;
 }
 
-.cabecalho .botao {
+.cabecalho > .botao {
   width: 100%;
   margin-top: 4px;
 }
+
+.cabecalho-botoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cabecalho-botoes .botao {
+  flex: 1;
+  max-width: 220px;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--texto-fraco);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* =========================================================
+   6. AVISOS
+   ========================================================= */
 
 .aviso {
   padding: 12px 14px;
@@ -142,6 +184,19 @@ body {
   background: var(--branco);
   font-size: 14px;
 }
+
+.aviso-cega {
+  padding: 12px 14px;
+  border-radius: var(--raio);
+  background: var(--azul-claro);
+  color: var(--azul-escuro);
+  font-size: 14px;
+}
+
+/* =========================================================
+   7. CARTÕES
+   ========================================================= */
+
 .cartao {
   background: var(--branco);
   border-radius: var(--raio);
@@ -149,9 +204,13 @@ body {
   padding: 16px;
 }
 
+/* =========================================================
+   8. FORMULÁRIOS E CAMPOS
+   ========================================================= */
+
 .busca {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);   /* duas colunas iguais */
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
@@ -166,69 +225,124 @@ body {
   font-weight: 600;
 }
 
-.campo input {
+.campo input,
+.campo select {
   height: 48px;
   padding: 0 12px;
   border: 1px solid var(--borda);
   border-radius: 10px;
-  font-family: inherit;   /* usa a mesma fonte do body */
+  font-family: inherit;
   font-size: 16px;
   color: var(--texto);
   background: var(--branco);
 }
 
-/* Quando o campo está selecionado */
-.campo input:focus {
+.campo textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 16px;
+  resize: vertical;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
   outline: none;
   border-color: var(--azul);
   box-shadow: 0 0 0 3px var(--azul-claro);
 }
 
-/* Ocupa a linha toda: da primeira até a última coluna */
 .campo-inteiro {
   grid-column: 1 / -1;
 }
 
-.busca {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);   /* duas colunas iguais */
-  gap: 12px;
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--azul);
 }
 
-.campo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--azul);
 }
 
-.campo label {
-  font-size: 14px;
+/* =========================================================
+   9. BOTÕES
+   ========================================================= */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao-principal {
+  background: var(--azul);
+  color: var(--branco);
+  border: none;
+}
+
+.botao-principal:hover {
+  background: var(--azul-escuro);
+}
+
+.botao-principal:disabled {
+  background: var(--azul);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.botao-contorno {
+  background: var(--branco);
+  color: var(--texto);
+  border: 1px solid var(--borda);
+}
+
+.botao-contorno:hover {
+  border-color: var(--azul);
+  color: var(--azul);
+}
+
+.botao-perigo {
+  background: #B91C1C;
+  color: var(--branco);
+  border: none;
+}
+
+.botao-perigo:hover {
+  background: #991B1B;
+}
+
+.botao-texto {
+  min-height: 44px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--texto-fraco);
+  font-family: inherit;
+  font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
 }
 
-.campo input {
-  height: 48px;
-  padding: 0 12px;
-  border: 1px solid var(--borda);
-  border-radius: 10px;
-  font-family: inherit;   /* usa a mesma fonte do body */
-  font-size: 16px;
-  color: var(--texto);
-  background: var(--branco);
-}
-
-/* Quando o campo está selecionado */
-.campo input:focus {
-  outline: none;
-  border-color: var(--azul);
-  box-shadow: 0 0 0 3px var(--azul-claro);
-}
-
-/* Ocupa a linha toda: da primeira até a última coluna */
-.campo-inteiro {
-  grid-column: 1 / -1;
-}
-
+/* =========================================================
+   10. BARRA DE AÇÕES
+   ========================================================= */
 
 .acoes {
   display: flex;
@@ -244,24 +358,19 @@ body {
   font-weight: 600;
 }
 
-/* Todos os checkboxes do sistema */
-input[type="checkbox"] {
-  width: 22px;
-  height: 22px;
-  accent-color: var(--azul);
-}
+/* =========================================================
+   11. TABELA QUE VIRA CARTÃO (celular)
+   ========================================================= */
 
 .tabela {
   width: 100%;
-  border-collapse: collapse;   /* junta as bordas das células */
+  border-collapse: collapse;
 }
 
-/* Esconde a linha de títulos no celular */
 .tabela thead {
   display: none;
 }
 
-/* Cada linha vira um cartão */
 .tabela tr {
   display: block;
   background: var(--branco);
@@ -271,7 +380,6 @@ input[type="checkbox"] {
   margin-bottom: 12px;
 }
 
-/* Cada célula: nome à esquerda, valor à direita */
 .tabela td {
   display: block;
   text-align: right;
@@ -279,7 +387,11 @@ input[type="checkbox"] {
   border-bottom: 1px solid var(--fundo);
 }
 
-/* O nome da coluna, que vem do data-label */
+/* Célula vazia não aparece */
+.tabela td:empty {
+  display: none;
+}
+
 .tabela td::before {
   content: attr(data-label);
   float: left;
@@ -287,19 +399,16 @@ input[type="checkbox"] {
   color: var(--texto-fraco);
 }
 
-/* A primeira célula (o checkbox) fica à esquerda */
 .tabela td:first-child {
   text-align: left;
 }
 
-/* O texto pequeno (cidade, motorista) embaixo do valor */
 .tabela small {
   display: block;
   font-size: 13px;
   color: var(--texto-fraco);
 }
 
-/* A célula dos botões: Abrir na largura toda e os outros embaixo */
 .celula-acoes {
   display: flex !important;
   flex-wrap: wrap;
@@ -308,26 +417,40 @@ input[type="checkbox"] {
   border-bottom: none !important;
 }
 
+.celula-acoes:empty {
+  display: none !important;
+}
+
 .celula-acoes .botao {
   width: 100%;
 }
 
+/* =========================================================
+   12. SELOS DE SITUAÇÃO
+   ========================================================= */
 
 .situacao {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 999px;   /* formato de pílula */
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.situacao.pendente   { background: #E2E8F0; color: #334155; }
-.situacao.conferindo { background: #DBE7FF; color: #163B7A; }
-.situacao.conferida  { background: #DCF5E6; color: #14532D; }
-.situacao.faturada   { background: #EDE7FB; color: #4C1D95; }
+.situacao.pendente     { background: #E2E8F0; color: #334155; }
+.situacao.naoconferida { background: #E2E8F0; color: #334155; }
+.situacao.conferindo   { background: #DBE7FF; color: #163B7A; }
+.situacao.naocontado   { background: #E8EFFB; color: #163B7A; }
+.situacao.conferida    { background: #DCF5E6; color: #14532D; }
+.situacao.ok           { background: #DCF5E6; color: #14532D; }
+.situacao.feito        { background: #DCF5E6; color: #14532D; }
+.situacao.faturada     { background: #EDE7FB; color: #4C1D95; }
+.situacao.falta        { background: #FDE2E2; color: #991B1B; }
+.situacao.sobra        { background: #FFEAD5; color: #9A3412; }
+.situacao.afazer       { background: #FFEAD5; color: #9A3412; }
 
-/* Mensagem de "nenhuma carga" */
+/* Mensagem de lista vazia */
 .vazio {
   text-align: center;
   padding: 40px 16px;
@@ -337,15 +460,303 @@ input[type="checkbox"] {
   color: var(--texto-fraco);
 }
 
+/* =========================================================
+   13. CONFERÊNCIA: BIPAR E CONTAGEM
+   ========================================================= */
+
+.bipar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bipar .campo input {
+  height: 52px;
+}
+
+.bipar-linha {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.campo-quantidade {
+  width: 90px;
+}
+
+.botao-camera {
+  width: 52px;
+  min-height: 52px;
+  padding: 0;
+  font-size: 20px;
+}
+
+.botao-registrar {
+  flex: 1;
+  min-height: 52px;
+}
+
+.ultimo-lido {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #DCF5E6;
+  color: #14532D;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.secao-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.secao-topo h2 {
+  font-size: 18px;
+}
+
+.secao-topo span {
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+.lista-contagem {
+  list-style: none;
+}
+
+.lista-contagem li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--fundo);
+}
+
+.lista-contagem li:last-child {
+  border-bottom: none;
+}
+
+.lista-contagem small {
+  display: block;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+.contado {
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.contado-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* =========================================================
+   14. CONFERÊNCIA: RESULTADO
+   ========================================================= */
+
+.resumo-conferencia {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.numero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.numero span {
+  font-size: 14px;
+  color: var(--texto-fraco);
+}
+
+.numero strong {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.numero.atencao {
+  border: 2px solid #F5B5B5;
+}
+
+.numero.atencao strong {
+  color: #991B1B;
+}
+
+.finalizada {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--azul-claro);
+}
+
+#itens-carga h2,
+#cortes-carga h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.lista-cortes {
+  list-style: none;
+}
+
+.lista-cortes li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--fundo);
+}
+
+.lista-cortes li:last-child {
+  border-bottom: none;
+}
+
+.lista-cortes span {
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+
+/* =========================================================
+   15. JANELAS (dialog)
+   ========================================================= */
+
+.janela {
+  margin: auto;
+  width: calc(100% - 32px);
+  max-width: 440px;
+  padding: 24px;
+  border: none;
+  border-radius: var(--raio);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.25);
+}
+
+.janela::backdrop {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.janela h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.janela p {
+  margin-bottom: 12px;
+}
+
+.janela .campo {
+  margin-bottom: 12px;
+}
+
+.janela-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.janela-topo h2 {
+  margin-bottom: 0;
+}
+
+.botao-fechar {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: var(--texto-fraco);
+  cursor: pointer;
+}
+
+.texto-fraco {
+  font-size: 14px;
+  color: var(--texto-fraco);
+}
+
+.alerta {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #FFEAD5;
+  color: #7A2E0E;
+  font-size: 14px;
+}
+
+.janela-botoes {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+}
+
+.janela-botoes .botao {
+  width: 100%;
+}
+
+.opcoes-pedido {
+  border: none;
+  margin-bottom: 12px;
+}
+
+.opcoes-pedido legend {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.opcoes-pedido label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Câmera */
+.camera {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--texto);
+  margin-bottom: 12px;
+}
+
+.camera video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.camera-linha {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 50%;
+  height: 2px;
+  background: var(--azul);
+  opacity: 0.8;
+}
+
+/* =========================================================
+   16. TELAS GRANDES (tablet e PC)
+   ========================================================= */
+
 @media (min-width: 768px) {
 
-  /* Página em duas colunas: menu à esquerda e conteúdo à direita */
+  /* Página: menu à esquerda e conteúdo à direita */
   body {
     display: grid;
     grid-template-columns: 260px 1fr;
   }
 
-  /* A barra de topo some: o menu já fica sempre aparecendo */
   .topo {
     display: none;
   }
@@ -363,12 +774,12 @@ input[type="checkbox"] {
     max-width: 1200px;
   }
 
-  .cabecalho .botao {
+  .cabecalho > .botao {
     width: auto;
     align-self: flex-start;
   }
 
-  /* Busca toda em uma linha */
+  /* Busca numa linha só */
   .busca {
     grid-template-columns: 1fr 1fr 1fr auto;
     align-items: end;
@@ -385,7 +796,7 @@ input[type="checkbox"] {
   }
 
   /* A tabela volta a ser tabela */
-  .tabela {
+    .tabela {
     background: var(--branco);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
@@ -402,7 +813,8 @@ input[type="checkbox"] {
   }
 
   .tabela th,
-  .tabela td {
+  .tabela td,
+  .tabela td:empty {
     display: table-cell;
     text-align: left;
     padding: 14px 16px;
@@ -416,15 +828,29 @@ input[type="checkbox"] {
   }
 
   .tabela td::before {
-    content: none;   /* esconde o nome da coluna: o título já aparece em cima */
+    content: none;
   }
 
-  .celula-acoes {
+  .celula-acoes,
+  .celula-acoes:empty {
     display: table-cell !important;
     white-space: nowrap;
   }
 
   .celula-acoes .botao {
+    width: auto;
+  }
+
+  .resumo-conferencia {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .janela-botoes {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .janela-botoes .botao {
     width: auto;
   }
 }
