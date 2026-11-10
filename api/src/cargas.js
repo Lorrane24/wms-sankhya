@@ -1,6 +1,6 @@
 // Consultas de cargas (ordens de carga) no Sankhya.
 import { consultarSql } from './sankhya.js';
-import { CARGAS_FALSAS } from './dados-falsos.js';
+import { CARGAS_FALSAS, ITENS_FALSOS } from './dados-falsos.js';
 
 // Filtro dos pedidos da empresa 501
 const FILTRO_PEDIDOS = "C.CODEMP = 501 AND C.TIPMOV IN ('P','V') AND C.CODTIPOPER <> 26";
@@ -43,6 +43,26 @@ export async function listarCargas({ de, ate, numero }) {
       ) G
       ORDER BY G.DATA DESC, G.ORDEMCARGA DESC
     ) WHERE ROWNUM <= 100
+  `;
+
+  return consultarSql(sql);
+}
+
+// Lista os itens (produtos) de uma carga, somando as quantidades dos pedidos.
+export async function listarItensDaCarga(numero) {
+  // Modo de dados falsos: abre a "gaveta" da carga (ou devolve lista vazia)
+  if (process.env.USAR_DADOS_FALSOS === 'SIM') {
+    return ITENS_FALSOS[numero] ?? [];
+  }
+
+  const sql = `
+    SELECT I.CODPROD, P.DESCRPROD, I.CODVOL, SUM(I.QTDNEG) QTDESPERADA
+    FROM TGFCAB C
+    JOIN TGFITE I ON I.NUNOTA = C.NUNOTA
+    JOIN TGFPRO P ON P.CODPROD = I.CODPROD
+    WHERE C.ORDEMCARGA = ${numero} AND ${FILTRO_PEDIDOS}
+    GROUP BY I.CODPROD, P.DESCRPROD, I.CODVOL
+    ORDER BY P.DESCRPROD
   `;
 
   return consultarSql(sql);

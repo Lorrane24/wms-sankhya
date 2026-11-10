@@ -1,110 +1,69 @@
-// Tela de Cargas: busca as cargas na API e mostra na tabela.
+// Consultas de cargas (ordens de carga) no Sankhya.
+import { consultarSql } from './sankhya.js';
+import { CARGAS_FALSAS, ITENS_FALSOS } from './dados-falsos.js';
 
-const corpoTabela = document.getElementById('corpo-tabela');
-const nenhumaCarga = document.getElementById('nenhuma-carga');
-const botaoAtualizar = document.getElementById('botao-atualizar');
-const formBusca = document.getElementById('form-busca');
-const campoDe = document.getElementById('data-inicio');
-const campoAte = document.getElementById('data-fim');
-const campoNumero = document.getElementById('numero-carga');
-const marcarTodas = document.getElementById('marcar-todas'); // ⭐
-const botaoFaturar = document.getElementById('botao-faturar'); // ⭐
-const totalSelecionadas = document.getElementById('total-selecionadas'); // ⭐
+// Filtro dos pedidos da empresa 501
+const FILTRO_PEDIDOS = "C.CODEMP = 501 AND C.TIPMOV IN ('P','V') AND C.CODTIPOPER <> 26";
 
-// Protege o HTML: troca símbolos perigosos por versões "inofensivas".
-function escapar(texto) {
-  return String(texto ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
-
-// '2026-11-10' vira '10/11/2026'
-function formatarData(dataIso) {
-  if (!dataIso) return '';
-  return dataIso.split('-').reverse().join('/');
-}
-
-// Monta o HTML de UMA linha da tabela
-function criarLinha(carga) {
-  const numero = escapar(carga.ORDEMCARGA);
-
-  return `
-    <tr>
-      <td><input type="checkbox" value="${numero}" aria-label="Selecionar carga ${numero}"></td>
-      <td data-label="Carga"><strong>${numero}</strong> <small>${escapar(carga.REGIAO)}</small></td>
-      <td data-label="Data">${escapar(formatarData(carga.DATA))}</td>
-      <td data-label="Veículo / motorista">${escapar(carga.VEICULO ?? 'Sem veículo')} <small>${escapar(carga.MOTORISTA ?? 'Sem motorista')}</small></td>
-      <td data-label="Pedidos">${escapar(carga.PEDIDOS)}</td>
-      <td data-label="Clientes">${escapar(carga.CLIENTES)}</td>
-      <td data-label="Situação"><span class="situacao">Não conferida</span></td>
-      <td class="celula-acoes"><a href="conferencia.html?carga=${numero}" class="botao botao-contorno">Abrir →</a></td>
-    </tr>`;
-}
-
-// ⭐ Conta as caixinhas marcadas e atualiza o botão Faturar
-function atualizarSelecao() {
-  const todas = corpoTabela.querySelectorAll('input[type="checkbox"]');
-  const marcadas = corpoTabela.querySelectorAll('input[type="checkbox"]:checked');
-
-  totalSelecionadas.textContent = marcadas.length;
-  botaoFaturar.disabled = marcadas.length === 0;
-  marcarTodas.checked = todas.length > 0 && marcadas.length === todas.length;
-}
-
-// Busca as cargas na API e coloca na tabela
-async function carregarCargas() {
-  try {
-    // Monta os filtros a partir do formulário
-    const filtros = new URLSearchParams();
-    if (campoDe.value) filtros.set('de', campoDe.value);
-    if (campoAte.value) filtros.set('ate', campoAte.value);
-    if (campoNumero.value.trim()) filtros.set('numero', campoNumero.value.trim());
-
-    const resposta = await fetch(`/cargas?${filtros}`);
-    const dados = await resposta.json();
-
-    // A API respondeu, mas avisou que deu erro
-    if (!dados.ok) {
-      throw new Error(dados.erro);
+// Busca as cargas de um período, ou uma carga pelo número.
+// de e ate chegam no formato AAAA-MM-DD; numero é opcional.
+export async function listarCargas({ de, ate, numero }) {
+  // Modo de dados falsos: não chama o Sankhya
+  if (process.env.USAR_DADOS_FALSOS === 'SIM') {
+    if (numero) {
+      return CARGAS_FALSAS.filter((carga) => String(carga.ORDEMCARGA) === numero);
     }
-
-    // Mostra nos campos as datas que a API usou
-    campoDe.value = dados.de;
-    campoAte.value = dados.ate;
-
-    corpoTabela.innerHTML = dados.cargas.map(criarLinha).join('');
-
-    // Mostra o aviso só se a lista vier vazia
-    nenhumaCarga.hidden = dados.cargas.length > 0;
-  } catch (erro) {
-    console.error('Erro ao carregar cargas:', erro);
-    corpoTabela.innerHTML = '<tr><td colspan="8">Não foi possível carregar as cargas. Tente de novo em instantes.</td></tr>';
-    nenhumaCarga.hidden = true;
+    return CARGAS_FALSAS;
   }
 
-  atualizarSelecao(); // ⭐ lista nova = nada marcado
+  const filtro = numero
+    ? `AND C.ORDEMCARGA = ${numero}`
+    : `AND C.DTNEG >= TO_DATE('${de}', 'YYYY-MM-DD')
+       AND C.DTNEG <  TO_DATE('${ate}', 'YYYY-MM-DD') + 1`;
+
+  const sql = `
+    SELECT * FROM (
+      SELECT G.ORDEMCARGA, G.PEDIDOS, G.CLIENTES, G.DATA,
+        (SELECT MAX(R.NOMEREG) FROM TGFORD O JOIN TSIREG R ON R.CODREG = O.CODREG
+          WHERE O.ORDEMCARGA = G.ORDEMCARGA AND O.CODEMP = G.CODEMP) REGIAO,
+        (SELECT MAX(NVL(VE.MARCAMODELO, VE.PLACA) || CASE WHEN VE.PLACA IS NOT NULL THEN ' - ' || VE.PLACA END)
+          FROM TGFORD O JOIN TGFVEI VE ON VE.CODVEICULO = O.CODVEICULO
+          WHERE O.ORDEMCARGA = G.ORDEMCARGA AND O.CODEMP = G.CODEMP) VEICULO,
+        (SELECT MAX(PM.NOMEPARC) FROM TGFORD O JOIN TGFPAR PM ON PM.CODPARC = O.CODPARCMOTORISTA
+          WHERE O.ORDEMCARGA = G.ORDEMCARGA AND O.CODEMP = G.CODEMP) MOTORISTA
+      FROM (
+        SELECT C.ORDEMCARGA,
+               COUNT(DISTINCT C.NUNOTA) PEDIDOS,
+               COUNT(DISTINCT C.CODPARC) CLIENTES,
+               TO_CHAR(MAX(C.DTNEG), 'YYYY-MM-DD') DATA,
+               MIN(C.CODEMP) CODEMP
+        FROM TGFCAB C
+        WHERE C.ORDEMCARGA > 0 AND ${FILTRO_PEDIDOS} ${filtro}
+        GROUP BY C.ORDEMCARGA
+      ) G
+      ORDER BY G.DATA DESC, G.ORDEMCARGA DESC
+    ) WHERE ROWNUM <= 100
+  `;
+
+  return consultarSql(sql);
 }
 
-// Botão ↻ Atualizar busca de novo
-botaoAtualizar.addEventListener('click', carregarCargas);
+// Lista os itens (produtos) de uma carga, somando as quantidades dos pedidos.
+export async function listarItensDaCarga(numero) {
+  // Modo de dados falsos: abre a "gaveta" da carga (ou devolve lista vazia)
+  if (process.env.USAR_DADOS_FALSOS === 'SIM') {
+    return ITENS_FALSOS[numero] ?? [];
+  }
 
-// Clicou em Buscar (ou apertou Enter no formulário)
-formBusca.addEventListener('submit', (evento) => {
-  evento.preventDefault();
-  carregarCargas();
-});
+  const sql = `
+    SELECT I.CODPROD, P.DESCRPROD, I.CODVOL, SUM(I.QTDNEG) QTDESPERADA
+    FROM TGFCAB C
+    JOIN TGFITE I ON I.NUNOTA = C.NUNOTA
+    JOIN TGFPRO P ON P.CODPROD = I.CODPROD
+    WHERE C.ORDEMCARGA = ${numero} AND ${FILTRO_PEDIDOS}
+    GROUP BY I.CODPROD, P.DESCRPROD, I.CODVOL
+    ORDER BY P.DESCRPROD
+  `;
 
-// ⭐ Marcou ou desmarcou alguma caixinha da tabela
-corpoTabela.addEventListener('change', atualizarSelecao);
-
-// ⭐ Marcar todas: copia o estado dela para todas as caixinhas
-marcarTodas.addEventListener('change', () => {
-  corpoTabela.querySelectorAll('input[type="checkbox"]').forEach((caixa) => {
-    caixa.checked = marcarTodas.checked;
-  });
-  atualizarSelecao();
-});
-
-carregarCargas();
+  return consultarSql(sql);
+}

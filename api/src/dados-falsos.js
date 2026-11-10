@@ -8,3 +8,17 @@ export const CARGAS_FALSAS = [
   { ORDEMCARGA: 1004, PEDIDOS: 5,  CLIENTES: 4, DATA: '2026-11-07', REGIAO: null,            VEICULO: null,                         MOTORISTA: null },
 ];
 
+
+// Itens de cada carga: o que tem que ir no caminhão.
+// A chave é o número da carga.
+export const ITENS_FALSOS = {
+  1001: [
+    { CODPROD: 101, DESCRPROD: 'Leite em Pó Exemplo 400g', CODVOL: 'UN', QTDESPERADA: 24 },
+    { CODPROD: 102, DESCRPROD: 'Chocolate em Pó Exemplo 200g', CODVOL: 'UN', QTDESPERADA: 12 },
+    { CODPROD: 103, DESCRPROD: 'Granulado Exemplo 1kg', CODVOL: 'CX', QTDESPERADA: 3 },
+  ],
+  1002: [
+    { CODPROD: 104, DESCRPROD: 'Polvilho Exemplo 500g', CODVOL: 'UN', QTDESPERADA: 30 },
+    { CODPROD: 101, DESCRPROD: 'Leite em Pó Exemplo 400g', CODVOL: 'UN', QTDESPERADA: 6 },
+  ],
+};
