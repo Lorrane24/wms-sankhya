@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cargas · Conferência de Carga</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="style.css">
     <script src="menu.js" defer></script>
     <script src="cargas.js" defer></script>
-
 </head>
-t
+<body>
+
     <!-- BARRA DE TOPO (no celular) -->
     <header class="topo">
         <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
@@ -86,23 +85,8 @@ t
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Carga de exemplo -->
-                    <tr>
-                        <td><input type="checkbox" aria-label="Selecionar carga 9022"></td>
-                        <td data-label="Carga"><strong>9022</strong> <small>PARACATU</small></td>
-                        <td data-label="Data">29/10/2026</td>
-                        <td data-label="Veículo / motorista">VW 8.150 · GHI-7J89 <small>Sem motorista</small></td>
-                        <td data-label="Pedidos">19</td>
-                        <td data-label="Clientes">10</td>
-                        <td data-label="Situação"><span class="situacao conferida">Conferida</span></td>
-                        <td class="celula-acoes">
-                            <a href="conferencia.html?carga=9022" class="botao botao-contorno">Abrir →</a>
-                            <!-- Opcional: imprimir documentos da carga -->
-                            <button type="button" class="botao-texto">Separação</button>
-                            <button type="button" class="botao-texto">Mapa</button>
-                        </td>
-                    </tr>
+                <tbody id="corpo-tabela">
+                    <!-- As linhas são criadas pelo cargas.js -->
                 </tbody>
             </table>
         </section>
