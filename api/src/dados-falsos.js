@@ -22,3 +22,13 @@ export const ITENS_FALSOS = {
     { CODPROD: 101, DESCRPROD: 'Leite em Pó Exemplo 400g', CODVOL: 'UN', QTDESPERADA: 6 },
   ],
 };
+
+
+// Produtos com código de barras falso, para testar a bipagem.
+// Códigos que começam com 2 são reservados para uso interno (não existem no mercado).
+export const PRODUTOS_FALSOS = [
+  { CODPROD: 101, DESCRPROD: 'Leite em Pó Exemplo 400g', CODVOL: 'UN', CODBARRA: '2000000000101' },
+  { CODPROD: 102, DESCRPROD: 'Chocolate em Pó Exemplo 200g', CODVOL: 'UN', CODBARRA: '2000000000102' },
+  { CODPROD: 103, DESCRPROD: 'Granulado Exemplo 1kg', CODVOL: 'CX', CODBARRA: '2000000000103' },
+  { CODPROD: 104, DESCRPROD: 'Polvilho Exemplo 500g', CODVOL: 'UN', CODBARRA: '2000000000104' },
+];

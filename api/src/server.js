@@ -3,13 +3,16 @@ import express from 'express';
 import { consultarSql, BASE } from './sankhya.js';
 import { buscarProdutoPorCodigo } from './produtos.js';
 import { listarCargas, listarItensDaCarga } from './cargas.js';
-import { banco } from './banco.js';
+import { contagemDaCarga, registrarBipagem } from './conferencia.js';
 
 const app = express();
 const PORTA = 3000;
 
 // Mostra as telas da pasta web (cargas.html, conferencia.html...)
 app.use(express.static('../web'));
+
+// Entende pedidos que chegam com dados em JSON (os POST)
+app.use(express.json());
 
 // Devolve a data de X dias atrás no formato AAAA-MM-DD
 function diasAtras(dias) {
@@ -94,6 +97,79 @@ app.get('/cargas/:numero/itens', async (req, res) => {
     res.json({ ok: true, base: BASE, carga: numero, itens });
   } catch (erro) {
     console.error('Erro ao listar itens da carga:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// Conferência de uma carga: o que tem que ir, o que já foi bipado e o que falta
+app.get('/cargas/:numero/conferencia', async (req, res) => {
+  const numero = req.params.numero;
+
+  if (!/^\d{1,10}$/.test(numero)) {
+    return res.status(400).json({ ok: false, erro: 'Número da carga inválido.' });
+  }
+
+  try {
+    const itens = await listarItensDaCarga(numero); // do Sankhya (ou falsos)
+    const contagem = contagemDaCarga(numero);       // do nosso banco
+
+    const resultado = itens.map((item) => {
+      const achado = contagem.find((linha) => Number(linha.codprod) === Number(item.CODPROD));
+      const conferido = achado ? Number(achado.conferido) : 0;
+      return { ...item, CONFERIDO: conferido, FALTA: item.QTDESPERADA - conferido };
+    });
+
+    res.json({ ok: true, base: BASE, carga: numero, itens: resultado });
+  } catch (erro) {
+    console.error('Erro ao montar a conferência:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// Recebe uma bipagem: { "codigo": "2000000000101", "quantidade": 10 }
+app.post('/cargas/:numero/bipagens', async (req, res) => {
+  const numero = req.params.numero;
+  const codigo = String(req.body?.codigo ?? '').trim();
+  const quantidade = Number(req.body?.quantidade ?? 1);
+
+  // Confere tudo o que chegou antes de usar
+  if (!/^\d{1,10}$/.test(numero)) {
+    return res.status(400).json({ ok: false, erro: 'Número da carga inválido.' });
+  }
+  if (!/^[A-Za-z0-9./-]{1,60}$/.test(codigo)) {
+    return res.status(400).json({ ok: false, erro: 'Código inválido.' });
+  }
+  if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 9999) {
+    return res.status(400).json({ ok: false, erro: 'Quantidade inválida.' });
+  }
+
+  try {
+    // 1. Que produto é esse código?
+    const produtos = await buscarProdutoPorCodigo(codigo);
+    if (produtos.length === 0) {
+      return res.status(404).json({ ok: false, erro: 'Produto não encontrado.' });
+    }
+
+    // 2. Esse produto é desta carga?
+    const itens = await listarItensDaCarga(numero);
+    const produto = produtos.find((p) =>
+      itens.some((item) => Number(item.CODPROD) === Number(p.CODPROD))
+    );
+    if (!produto) {
+      return res.status(400).json({ ok: false, erro: 'Este produto não é desta carga.' });
+    }
+
+    // 3. Guarda no nosso banco
+    registrarBipagem({
+      carga: Number(numero),
+      codprod: Number(produto.CODPROD),
+      quantidade,
+      codigoLido: codigo,
+    });
+
+    res.status(201).json({ ok: true, codprod: produto.CODPROD, descricao: produto.DESCRPROD, quantidade });
+  } catch (erro) {
+    console.error('Erro ao registrar bipagem:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
   }
 });
