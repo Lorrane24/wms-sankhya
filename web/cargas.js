@@ -1,8 +1,12 @@
 // Tela de Cargas: busca as cargas na API e mostra na tabela.
 
 const corpoTabela = document.getElementById('corpo-tabela');
-const nenhumaCarga = document.getElementById('nenhuma-carga'); // ⭐
-const botaoAtualizar = document.getElementById('botao-atualizar'); // ⭐
+const nenhumaCarga = document.getElementById('nenhuma-carga');
+const botaoAtualizar = document.getElementById('botao-atualizar');
+const formBusca = document.getElementById('form-busca'); // ⭐
+const campoDe = document.getElementById('data-inicio'); // ⭐
+const campoAte = document.getElementById('data-fim'); // ⭐
+const campoNumero = document.getElementById('numero-carga'); // ⭐
 
 // Protege o HTML: troca símbolos perigosos por versões "inofensivas".
 function escapar(texto) {
@@ -27,7 +31,7 @@ function criarLinha(carga) {
     <tr>
       <td><input type="checkbox" value="${numero}" aria-label="Selecionar carga ${numero}"></td>
       <td data-label="Carga"><strong>${numero}</strong> <small>${escapar(carga.REGIAO)}</small></td>
-      <td data-label="ta">${escapar(formatarData(carga.DATA))}</td>
+      <td data-label="Data">${escapar(formatarData(carga.DATA))}</td>
       <td data-label="Veículo / motorista">${escapar(carga.VEICULO ?? 'Sem veículo')} <small>${escapar(carga.MOTORISTA ?? 'Sem motorista')}</small></td>
       <td data-label="Pedidos">${escapar(carga.PEDIDOS)}</td>
       <td data-label="Clientes">${escapar(carga.CLIENTES)}</td>
@@ -38,27 +42,43 @@ function criarLinha(carga) {
 
 // Busca as cargas na API e coloca na tabela
 async function carregarCargas() {
-  try { // ⭐
-    const resposta = await fetch('/cargas?numero=abc');
+  try {
+    // ⭐ Monta os filtros a partir do formulário
+    const filtros = new URLSearchParams();
+    if (campoDe.value) filtros.set('de', campoDe.value);
+    if (campoAte.value) filtros.set('ate', campoAte.value);
+    if (campoNumero.value.trim()) filtros.set('numero', campoNumero.value.trim());
+
+    const resposta = await fetch(`/cargas?${filtros}`); // ⭐
     const dados = await resposta.json();
 
-    // ⭐ A API respondeu, mas avisou que deu erro
+    // A API respondeu, mas avisou que deu erro
     if (!dados.ok) {
       throw new Error(dados.erro);
     }
 
+    // ⭐ Mostra nos campos as datas que a API usou
+    campoDe.value = dados.de;
+    campoAte.value = dados.ate;
+
     corpoTabela.innerHTML = dados.cargas.map(criarLinha).join('');
 
-    // ⭐ Mostra o aviso só se a lista vier vazia
+    // Mostra o aviso só se a lista vier vazia
     nenhumaCarga.hidden = dados.cargas.length > 0;
-  } catch (erro) { // ⭐
+  } catch (erro) {
     console.error('Erro ao carregar cargas:', erro);
     corpoTabela.innerHTML = '<tr><td colspan="8">Não foi possível carregar as cargas. Tente de novo em instantes.</td></tr>';
     nenhumaCarga.hidden = true;
   }
 }
 
-// ⭐ Botão ↻ Atualizar busca de novo
+// Botão ↻ Atualizar busca de novo
 botaoAtualizar.addEventListener('click', carregarCargas);
+
+// ⭐ Clicou em Buscar (ou apertou Enter no formulário)
+formBusca.addEventListener('submit', (evento) => {
+  evento.preventDefault();
+  carregarCargas();
+});
 
 carregarCargas();
