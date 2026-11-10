@@ -1,19 +1,27 @@
 // Consultas de cargas (ordens de carga) no Sankhya.
-import { consultarSql} from './sankhya.js';
+import { consultarSql } from './sankhya.js';
+import { CARGAS_FALSAS } from './dados-falsos.js';
 
 // Filtro dos pedidos da empresa 501
-
 const FILTRO_PEDIDOS = "C.CODEMP = 501 AND C.TIPMOV IN ('P','V') AND C.CODTIPOPER <> 26";
 
 // Busca as cargas de um período, ou uma carga pelo número.
 // de e ate chegam no formato AAAA-MM-DD; numero é opcional.
 export async function listarCargas({ de, ate, numero }) {
+  // Modo de dados falsos: não chama o Sankhya
+  if (process.env.USAR_DADOS_FALSOS === 'SIM') {
+    if (numero) {
+      return CARGAS_FALSAS.filter((carga) => String(carga.ORDEMCARGA) === numero);
+    }
+    return CARGAS_FALSAS;
+  }
+
   const filtro = numero
     ? `AND C.ORDEMCARGA = ${numero}`
     : `AND C.DTNEG >= TO_DATE('${de}', 'YYYY-MM-DD')
        AND C.DTNEG <  TO_DATE('${ate}', 'YYYY-MM-DD') + 1`;
 
- const sql = `
+  const sql = `
     SELECT * FROM (
       SELECT G.ORDEMCARGA, G.PEDIDOS, G.CLIENTES, G.DATA,
         (SELECT MAX(R.NOMEREG) FROM TGFORD O JOIN TSIREG R ON R.CODREG = O.CODREG
