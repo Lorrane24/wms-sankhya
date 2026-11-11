@@ -7,9 +7,15 @@ import { listarCargas, listarItensDaCarga } from './cargas.js';
 import {
   contagemDaCarga,
   registrarBipagem,
-  finalizarConferencia, // ⭐
-  dataFinalizacao,      // ⭐
+  finalizarConferencia,
+  dataFinalizacao,
 } from './conferencia.js';
+import {
+  registrarCorte,     // ⭐
+  quantidadeCortada,  // ⭐
+  listarCortes,       // ⭐
+  marcarCorteFeito,   // ⭐
+} from './cortes.js';
 
 const app = express();
 const PORTA = 3000;
@@ -118,26 +124,31 @@ app.get('/cargas/:numero/conferencia', async (req, res) => {
   try {
     const itens = await listarItensDaCarga(numero); // do Sankhya (ou falsos)
     const contagem = contagemDaCarga(numero);       // do nosso banco
-    const finalizadaEm = dataFinalizacao(Number(numero)); // ⭐ null = aberta
+    const finalizadaEm = dataFinalizacao(Number(numero)); // null = aberta
 
     const resultado = itens.map((item) => {
       const achado = contagem.find((linha) => Number(linha.codprod) === Number(item.CODPROD));
       const conferido = achado ? Number(achado.conferido) : 0;
 
-      // ⭐ Conferência cega: enquanto estiver aberta, NÃO manda o esperado
+      // Conferência cega: enquanto estiver aberta, NÃO manda o esperado
       if (!finalizadaEm) {
         return { CODPROD: item.CODPROD, DESCRPROD: item.DESCRPROD, CODVOL: item.CODVOL, CONFERIDO: conferido };
       }
 
-      return { ...item, CONFERIDO: conferido, FALTA: item.QTDESPERADA - conferido };
+      return {
+        ...item,
+        CONFERIDO: conferido,
+        FALTA: item.QTDESPERADA - conferido,
+        CORTADO: quantidadeCortada(Number(numero), Number(item.CODPROD)), // ⭐
+      };
     });
 
     res.json({
       ok: true,
       base: BASE,
       carga: numero,
-      finalizada: Boolean(finalizadaEm), // ⭐
-      finalizadaEm,                      // ⭐
+      finalizada: Boolean(finalizadaEm),
+      finalizadaEm,
       itens: resultado,
     });
   } catch (erro) {
@@ -163,7 +174,7 @@ app.post('/cargas/:numero/bipagens', async (req, res) => {
     return res.status(400).json({ ok: false, erro: 'Quantidade inválida.' });
   }
 
-  // ⭐ Depois de finalizada, não aceita mais bipagem
+  // Depois de finalizada, não aceita mais bipagem
   if (dataFinalizacao(Number(numero))) {
     return res.status(409).json({ ok: false, erro: 'Esta conferência já foi finalizada.' });
   }
@@ -199,7 +210,7 @@ app.post('/cargas/:numero/bipagens', async (req, res) => {
   }
 });
 
-// ⭐ Finaliza a conferência de uma carga
+// Finaliza a conferência de uma carga
 app.post('/cargas/:numero/finalizar', (req, res) => {
   const numero = req.params.numero;
 
@@ -212,6 +223,102 @@ app.post('/cargas/:numero/finalizar', (req, res) => {
     res.json({ ok: true, carga: numero, finalizadaEm: dataFinalizacao(Number(numero)) });
   } catch (erro) {
     console.error('Erro ao finalizar a conferência:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ⭐ Registra um corte: { "codprod": 101, "quantidade": 6, "motivo": "Sem estoque" }
+app.post('/cargas/:numero/cortes', async (req, res) => {
+  const numero = req.params.numero;
+  const codprod = Number(req.body?.codprod);
+  const quantidade = Number(req.body?.quantidade);
+  const motivo = String(req.body?.motivo ?? '').trim().slice(0, 300);
+
+  // Confere tudo o que chegou antes de usar
+  if (!/^\d{1,10}$/.test(numero)) {
+    return res.status(400).json({ ok: false, erro: 'Número da carga inválido.' });
+  }
+  if (!Number.isInteger(codprod) || codprod < 1) {
+    return res.status(400).json({ ok: false, erro: 'Produto inválido.' });
+  }
+  if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 9999) {
+    return res.status(400).json({ ok: false, erro: 'Quantidade inválida.' });
+  }
+
+  // Só dá para cortar depois de finalizar (antes, ainda não se sabe o que faltou)
+  if (!dataFinalizacao(Number(numero))) {
+    return res.status(409).json({ ok: false, erro: 'Finalize a conferência antes de cortar.' });
+  }
+
+  try {
+    // O produto é desta carga?
+    const itens = await listarItensDaCarga(numero);
+    const item = itens.find((i) => Number(i.CODPROD) === codprod);
+    if (!item) {
+      return res.status(404).json({ ok: false, erro: 'Este produto não é desta carga.' });
+    }
+
+    // Quanto ainda dá para cortar? (o que faltou, menos o que já foi cortado)
+    const achado = contagemDaCarga(numero).find((linha) => Number(linha.codprod) === codprod);
+    const conferido = achado ? Number(achado.conferido) : 0;
+    const falta = Number(item.QTDESPERADA) - conferido;
+    const disponivel = falta - quantidadeCortada(Number(numero), codprod);
+
+    if (disponivel <= 0) {
+      return res.status(400).json({ ok: false, erro: 'Não há falta para cortar neste produto.' });
+    }
+    if (quantidade > disponivel) {
+      return res.status(400).json({ ok: false, erro: `Só dá para cortar até ${disponivel}.` });
+    }
+
+    registrarCorte({
+      carga: Number(numero),
+      codprod,
+      descrprod: item.DESCRPROD,
+      codvol: item.CODVOL,
+      quantidade,
+      motivo,
+    });
+
+    res.status(201).json({ ok: true, carga: numero, codprod, descricao: item.DESCRPROD, quantidade });
+  } catch (erro) {
+    console.error('Erro ao registrar corte:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ⭐ Lista os cortes: /cortes (todos), /cortes?status=A_FAZER ou /cortes?status=FEITO
+app.get('/cortes', (req, res) => {
+  const status = req.query.status || '';
+
+  if (!['', 'A_FAZER', 'FEITO'].includes(status)) {
+    return res.status(400).json({ ok: false, erro: 'Situação inválida.' });
+  }
+
+  try {
+    res.json({ ok: true, status, cortes: listarCortes(status) });
+  } catch (erro) {
+    console.error('Erro ao listar cortes:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ⭐ Marca um corte como feito (ajustado no Sankhya)
+app.post('/cortes/:id/feito', (req, res) => {
+  const id = req.params.id;
+
+  if (!/^\d{1,10}$/.test(id)) {
+    return res.status(400).json({ ok: false, erro: 'Corte inválido.' });
+  }
+
+  try {
+    const mudou = marcarCorteFeito(Number(id));
+    if (!mudou) {
+      return res.status(404).json({ ok: false, erro: 'Corte não encontrado ou já estava feito.' });
+    }
+    res.json({ ok: true, id: Number(id) });
+  } catch (erro) {
+    console.error('Erro ao marcar corte como feito:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
   }
 });
