@@ -6,14 +6,17 @@
     <title>Cortes · Conferência de Carga</title>
     <link rel="stylesheet" href="style.css">
     <script src="menu.js" defer></script>
+    <script src="tela-cortes.js" defer></script>
 </head>
 <body>
 
+    <!-- BARRA DE TOPO (no celular) -->
     <header class="topo">
         <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
         <strong>Conferência de Carga</strong>
     </header>
 
+    <!-- MENU LATERAL (no celular, abre pelo ☰) -->
     <aside id="menu" class="menu">
         <div class="menu-marca">
             <strong>Conferência de Carga</strong>
@@ -31,77 +34,66 @@
         <!-- CABEÇALHO DA PÁGINA -->
         <header class="cabecalho">
             <h1>Cortes</h1>
-            <p>Itens cortados dos pedidos na conferência. Os que o app não consegue cortar sozinho ficam como "A fazer no Sankhya".</p>
-            <button id="botao-imprimir-cortes" type="button" class="botao botao-contorno">Imprimir cortes</button>
+            <p>Produtos que faltaram na conferência e precisam ser cortados do pedido no Sankhya.</p>
+            <div class="cabecalho-botoes">
+                <button id="botao-imprimir" type="button" class="botao botao-contorno">Imprimir / PDF</button>
+            </div>
         </header>
 
-        <!-- FILTROS -->
-        <form id="form-filtro-cortes" class="cartao busca">
-            <div class="campo">
-                <label for="filtro-situacao">Situação</label>
-                <select id="filtro-situacao">
-                    <option>Todos</option>
-                    <option>A fazer no Sankhya</option>
-                    <option>Feitos</option>
-                </select>
-            </div>
-            <div class="campo">
-                <label for="filtro-carga">Carga</label>
-                <select id="filtro-carga">
-                    <option>Todas as cargas</option>
-                    <option>9022</option>
-                    <option>9031</option>
+        <div class="aviso">
+            <strong>Modo teste:</strong> os cortes ficam só no banco do app. Nada é alterado no Sankhya ainda.
+        </div>
+
+        <!-- FILTRO -->
+        <form id="form-filtro" class="cartao busca">
+            <div class="campo campo-inteiro">
+                <label for="filtro-status">Situação</label>
+                <select id="filtro-status">
+                    <option value="A_FAZER">A fazer no Sankhya</option>
+                    <option value="FEITO">Feitos</option>
+                    <option value="">Todos</option>
                 </select>
             </div>
         </form>
+
+        <!-- Mensagem depois de marcar como feito (deu certo ou erro) -->
+        <p id="mensagem-cortes" role="status"></p>
 
         <!-- LISTA DE CORTES -->
         <section id="lista-cortes">
             <table class="tabela">
                 <thead>
                     <tr>
-                        <th>Produto</th>
                         <th>Carga</th>
-                        <th>Pedido</th>
-                        <th>Cliente</th>
-                        <th>Qtd. cortada</th>
+                        <th>Produto</th>
+                        <th>Cortar</th>
+                        <th>Motivo</th>
                         <th>Situação</th>
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Corte de exemplo: a fazer no Sankhya -->
-                    <tr>
-                        <td data-label="Produto"><strong>ALGEMIX CHOC BRANCO 1KG MF</strong> <small>Código 13</small></td>
-                        <td data-label="Carga">9022</td>
-                        <td data-label="Pedido">2039946</td>
-                        <td data-label="Cliente">Cliente Exemplo 2</td>
-                        <td data-label="Qtd. cortada">1 PT</td>
-                        <td data-label="Situação"><span class="situacao afazer">A fazer no Sankhya</span></td>
-                        <td class="celula-acoes">
-                            <!-- Aparece quando: o corte ainda não foi feito -->
-                            <button type="button" class="botao botao-contorno">✓ Marcar como feito</button>
-                        </td>
-                    </tr>
-                    <!-- Corte de exemplo: feito -->
-                    <tr>
-                        <td data-label="Produto"><strong>ALGEMIX ABACAXI 1KG MF</strong> <small>Código 4409</small></td>
-                        <td data-label="Carga">9022</td>
-                        <td data-label="Pedido">2039940</td>
-                        <td data-label="Cliente">Cliente Exemplo 1</td>
-                        <td data-label="Qtd. cortada">3 PT</td>
-                        <td data-label="Situação"><span class="situacao feito">Feito</span></td>
-                        <td class="celula-acoes"></td>
-                    </tr>
+                <tbody id="corpo-cortes">
+                    <!-- As linhas são criadas pelo tela-cortes.js -->
                 </tbody>
             </table>
         </section>
 
-        <!-- Aparece quando: não há nenhum corte -->
+        <!-- Aparece quando: não tem nenhum corte nessa situação -->
         <div id="nenhum-corte" class="cartao vazio" hidden>
             <h2>Nenhum corte aqui</h2>
-            <p>Os cortes aparecem quando o conferente usa "Cortar no pedido" na conferência.</p>
+            <p>Os cortes são feitos na conferência finalizada, no botão Cortar.</p>
         </div>
+
+        <!-- JANELA: confirmar que o corte foi feito no Sankhya -->
+        <dialog id="janela-feito">
+            <h2>Corte feito no Sankhya?</h2>
+            <p id="feito-texto">Corte</p>
+            <p>Marque só depois de ajustar o pedido no Sankhya.</p>
+            <div class="cabecalho-botoes">
+                <button id="cancelar-feito" type="button" class="botao botao-contorno">Cancelar</button>
+                <button id="confirmar-feito" type="button" class="botao botao-principal">Marcar como feito</button>
+            </div>
+        </dialog>
 
     </main>
 
