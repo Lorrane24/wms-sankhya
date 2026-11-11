@@ -1,6 +1,6 @@
 // Tudo que conversa com a API do Sankhya fica neste arquivo.
 
-const URL_SANKHYA = 'https://api.sankhya.com.br';
+
 
 // Qual base usar: TESTE ou PRODUCAO (vem do .env).
 // Se estiver vazio ou escrito errado, usa TESTE, que é o mais seguro.
@@ -8,6 +8,8 @@ export const BASE = process.env.SANKHYA_BASE === 'PRODUCAO' ? 'PRODUCAO' : 'TEST
 
 // O começo do nome das variáveis no .env, conforme a base
 const PREFIXO = BASE === 'PRODUCAO' ? 'SANKHYA_PROD_' : 'SANKHYA_TESTE_';
+  // A URL do Gateway também depende da base (produção ou sandbox)
+  const URL_SANKHYA = process.env[PREFIXO + 'URL'] || 'https://api.sankhya.com.br';
 
 // As credenciais da base escolhida
 const credenciais = {
@@ -16,7 +18,7 @@ const credenciais = {
   xToken: process.env[PREFIXO + 'X_TOKEN'],
 };
 
-console.log(`Sankhya: usando a base ${BASE}`);
+ console.log(`Sankhya: usando a base ${BASE} em ${URL_SANKHYA}`);
 
 // Faz login no Sankhya e devolve a resposta dele
 export async function fazerLogin() {
