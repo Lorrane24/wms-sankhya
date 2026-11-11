@@ -15,6 +15,16 @@ const somarBipagens = banco.prepare(`
   GROUP BY codprod
 `);
 
+const marcarFinalizada = banco.prepare(`
+  INSERT INTO conferencias (carga, finalizada_em)
+  VALUES (?, datetime('now', 'localtime'))
+  ON CONFLICT(carga) DO NOTHING
+`);
+
+const buscarFinalizacao = banco.prepare(`
+  SELECT finalizada_em FROM conferencias WHERE carga = ?
+`);
+
 // Guarda uma bipagem nova
 export function registrarBipagem({ carga, codprod, quantidade, codigoLido }) {
   inserirBipagem.run(carga, codprod, quantidade, codigoLido);
@@ -23,4 +33,14 @@ export function registrarBipagem({ carga, codprod, quantidade, codigoLido }) {
 // Soma tudo o que já foi bipado na carga, produto por produto
 export function contagemDaCarga(carga) {
   return somarBipagens.all(carga);
+}
+
+// Finaliza a conferência da carga (se já estiver finalizada, não faz nada)
+export function finalizarConferencia(carga) {
+  marcarFinalizada.run(carga);
+}
+
+// Quando a carga foi finalizada? (null = ainda está aberta)
+export function dataFinalizacao(carga) {
+  return buscarFinalizacao.get(carga)?.finalizada_em ?? null;
 }

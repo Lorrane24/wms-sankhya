@@ -1,9 +1,15 @@
 // Servidor da API: recebe os pedidos da tela e responde.
+// ESTE ARQUIVO FICA EM: api/src/server.js
 import express from 'express';
 import { consultarSql, BASE } from './sankhya.js';
 import { buscarProdutoPorCodigo } from './produtos.js';
 import { listarCargas, listarItensDaCarga } from './cargas.js';
-import { contagemDaCarga, registrarBipagem } from './conferencia.js';
+import {
+  contagemDaCarga,
+  registrarBipagem,
+  finalizarConferencia, // ⭐
+  dataFinalizacao,      // ⭐
+} from './conferencia.js';
 
 const app = express();
 const PORTA = 3000;
@@ -101,7 +107,7 @@ app.get('/cargas/:numero/itens', async (req, res) => {
   }
 });
 
-// Conferência de uma carga: o que tem que ir, o que já foi bipado e o que falta
+// Conferência de uma carga: o que já foi bipado (e, depois de finalizar, o esperado e a diferença)
 app.get('/cargas/:numero/conferencia', async (req, res) => {
   const numero = req.params.numero;
 
@@ -112,14 +118,28 @@ app.get('/cargas/:numero/conferencia', async (req, res) => {
   try {
     const itens = await listarItensDaCarga(numero); // do Sankhya (ou falsos)
     const contagem = contagemDaCarga(numero);       // do nosso banco
+    const finalizadaEm = dataFinalizacao(Number(numero)); // ⭐ null = aberta
 
     const resultado = itens.map((item) => {
       const achado = contagem.find((linha) => Number(linha.codprod) === Number(item.CODPROD));
       const conferido = achado ? Number(achado.conferido) : 0;
+
+      // ⭐ Conferência cega: enquanto estiver aberta, NÃO manda o esperado
+      if (!finalizadaEm) {
+        return { CODPROD: item.CODPROD, DESCRPROD: item.DESCRPROD, CODVOL: item.CODVOL, CONFERIDO: conferido };
+      }
+
       return { ...item, CONFERIDO: conferido, FALTA: item.QTDESPERADA - conferido };
     });
 
-    res.json({ ok: true, base: BASE, carga: numero, itens: resultado });
+    res.json({
+      ok: true,
+      base: BASE,
+      carga: numero,
+      finalizada: Boolean(finalizadaEm), // ⭐
+      finalizadaEm,                      // ⭐
+      itens: resultado,
+    });
   } catch (erro) {
     console.error('Erro ao montar a conferência:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
@@ -141,6 +161,11 @@ app.post('/cargas/:numero/bipagens', async (req, res) => {
   }
   if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 9999) {
     return res.status(400).json({ ok: false, erro: 'Quantidade inválida.' });
+  }
+
+  // ⭐ Depois de finalizada, não aceita mais bipagem
+  if (dataFinalizacao(Number(numero))) {
+    return res.status(409).json({ ok: false, erro: 'Esta conferência já foi finalizada.' });
   }
 
   try {
@@ -170,6 +195,23 @@ app.post('/cargas/:numero/bipagens', async (req, res) => {
     res.status(201).json({ ok: true, codprod: produto.CODPROD, descricao: produto.DESCRPROD, quantidade });
   } catch (erro) {
     console.error('Erro ao registrar bipagem:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ⭐ Finaliza a conferência de uma carga
+app.post('/cargas/:numero/finalizar', (req, res) => {
+  const numero = req.params.numero;
+
+  if (!/^\d{1,10}$/.test(numero)) {
+    return res.status(400).json({ ok: false, erro: 'Número da carga inválido.' });
+  }
+
+  try {
+    finalizarConferencia(Number(numero));
+    res.json({ ok: true, carga: numero, finalizadaEm: dataFinalizacao(Number(numero)) });
+  } catch (erro) {
+    console.error('Erro ao finalizar a conferência:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
   }
 });

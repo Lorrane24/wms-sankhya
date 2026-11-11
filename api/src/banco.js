@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 // O banco é um arquivo só. Se não existir, é criado sozinho na pasta api.
 export const banco = new DatabaseSync('conferencia.db');
 
-// Cria a tabela de bipagens na primeira vez (se ainda não existir)
+// Tabela de bipagens: cada leitura do conferente
 banco.exec(`
   CREATE TABLE IF NOT EXISTS bipagens (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,6 +13,14 @@ banco.exec(`
     quantidade  INTEGER NOT NULL,
     codigo_lido TEXT,
     criado_em   TEXT DEFAULT (datetime('now', 'localtime'))
+  )
+`);
+
+// Tabela de conferências: guarda quando cada carga foi finalizada
+banco.exec(`
+  CREATE TABLE IF NOT EXISTS conferencias (
+    carga         INTEGER PRIMARY KEY,
+    finalizada_em TEXT
   )
 `);
 
