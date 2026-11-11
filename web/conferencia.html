@@ -6,14 +6,17 @@
     <title>Conferência · Conferência de Carga</title>
     <link rel="stylesheet" href="style.css">
     <script src="menu.js" defer></script>
+    <script src="tela-conferencia.js" defer></script>
 </head>
 <body>
 
+    <!-- BARRA DE TOPO (no celular) -->
     <header class="topo">
         <button id="botao-menu" type="button" aria-label="Abrir menu">☰</button>
         <strong>Conferência de Carga</strong>
     </header>
 
+    <!-- MENU LATERAL (no celular, abre pelo ☰) -->
     <aside id="menu" class="menu">
         <div class="menu-marca">
             <strong>Conferência de Carga</strong>
@@ -30,8 +33,8 @@
 
         <!-- CABEÇALHO DA PÁGINA -->
         <header class="cabecalho">
-            <h1 id="titulo-carga">Carga 9022</h1>
-            <p id="detalhe-carga">VW 8.150 · GHI-7J89 · 10 pedido(s)</p>
+            <h1 id="titulo-carga">Carga</h1>
+            <p id="detalhe-carga">Carregando...</p>
             <div class="cabecalho-botoes">
                 <a href="cargas.html" class="voltar">← Cargas</a>
                 <!-- Aparece quando: a conferência está aberta -->
@@ -42,24 +45,91 @@
         </header>
 
         <div class="aviso">
-            <strong>Modo teste:</strong> esta conferência e os cortes usam a base de teste do Sankhya. A produção não é alterada.
+            <strong>Modo teste:</strong> esta conferência usa dados de teste. A produção não é alterada.
         </div>
 
         <!-- ========== MOMENTO 1: CONFERÊNCIA ABERTA ========== -->
+        <section id="momento-aberta">
 
-        <div class="aviso-cega">
-            <strong>Conferência cega.</strong> As quantidades esperadas ficam escondidas até finalizar.
-        </div>
-
-        <!-- BIPAR -->
-        <form id="form-bipar" class="cartao bipar">
-            <div class="campo">
-                <label for="campo-bipar">Código de barras ou código do produto</label>
-                <input id="campo-bipar" placeholder="Bipe o código" autofocus>
+            <div class="aviso-cega">
+                <strong>Conferência cega.</strong> As quantidades esperadas ficam escondidas até finalizar.
             </div>
-            <div class="bipar-linha">
-                <div class="campo campo-quantidade">
-                    <label for="campo-quantidade">Quantidade</label>
-                    <input type="number" id="campo-quantidade" value="1" min="1">
+
+            <!-- BIPAR -->
+            <form id="form-bipar" class="cartao bipar">
+                <div class="campo">
+                    <label for="campo-bipar">Código de barras ou código do produto</label>
+                    <input id="campo-bipar" placeholder="Bipe o código" autocomplete="off" autofocus>
                 </div>
-                <button type="button" class="botao botao-contorno botao-camera" aria-label="Ler o código com a câmera">📷</button>
+                <div class="bipar-linha">
+                    <div class="campo campo-quantidade">
+                        <label for="campo-quantidade">Quantidade</label>
+                        <input type="number" id="campo-quantidade" value="1" min="1">
+                    </div>
+                    <button type="submit" class="botao botao-principal">Registrar</button>
+                </div>
+                <!-- Mensagem depois de cada bipagem (deu certo ou erro) -->
+                <p id="mensagem-bipagem" role="status"></p>
+            </form>
+
+            <!-- O QUE JÁ FOI CONFERIDO -->
+            <section class="cartao">
+                <h2>Já conferido</h2>
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Unidade</th>
+                            <th>Conferido</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-contagem">
+                        <!-- As linhas são criadas pelo conferencia.js -->
+                    </tbody>
+                </table>
+                <!-- Aparece quando: nada foi bipado ainda -->
+                <p id="nada-bipado" hidden>Nada bipado ainda. Comece pelo campo acima.</p>
+            </section>
+
+        </section>
+
+        <!-- ========== MOMENTO 2: CONFERÊNCIA FINALIZADA ========== -->
+        <section id="momento-finalizada" hidden>
+
+            <div class="aviso">
+                <strong>Conferência finalizada.</strong> Agora dá para ver o esperado e as diferenças.
+            </div>
+
+            <section class="cartao">
+                <h2>Resultado</h2>
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Esperado</th>
+                            <th>Conferido</th>
+                            <th>Diferença</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-resultado">
+                        <!-- As linhas são criadas pelo conferencia.js -->
+                    </tbody>
+                </table>
+            </section>
+
+        </section>
+
+        <!-- JANELA: confirmar finalizar -->
+        <dialog id="janela-finalizar">
+            <h2>Finalizar a conferência?</h2>
+            <p>Depois de finalizar, não dá mais para bipar nesta carga.</p>
+            <div class="cabecalho-botoes">
+                <button id="cancelar-finalizar" type="button" class="botao botao-contorno">Cancelar</button>
+                <button id="confirmar-finalizar" type="button" class="botao botao-principal">Finalizar</button>
+            </div>
+        </dialog>
+
+    </main>
+
+</body>
+</html>

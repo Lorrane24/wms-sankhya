@@ -24,8 +24,7 @@ export async function buscarProdutoPorCodigo(codigo) {
         OR EXISTS (SELECT 1 FROM TGFBAR B WHERE B.CODPROD = P.CODPROD AND B.CODBARRA = ${cod})
         OR EXISTS (SELECT 1 FROM TGFVOA V WHERE V.CODPROD = P.CODPROD AND V.CODBARRA = ${cod})
       )
-      AND ROWNUM <= 5
-  `;
+      AND ROWNUM <= 5`;
 
   return consultarSql(sql);
 }

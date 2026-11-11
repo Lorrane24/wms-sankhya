@@ -1,4 +1,5 @@
 // Conferência: guarda e soma as bipagens no banco próprio (SQLite).
+// ESTE ARQUIVO FICA EM: api/src/conferencia.js
 import { banco } from './banco.js';
 
 // Comandos SQL "preparados": o ? é um espaço reservado para o valor.
