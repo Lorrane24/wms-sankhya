@@ -1,4 +1,5 @@
-// Banco de dados próprio da API (SQLite): guarda as bipagens da conferência.
+// Banco de dados próprio da API (SQLite): guarda conferências, cortes e faturamentos.
+// ESTE ARQUIVO FICA EM: api/src/banco.js
 import { DatabaseSync } from 'node:sqlite';
 
 // O banco é um arquivo só. Se não existir, é criado sozinho na pasta api.
@@ -24,8 +25,6 @@ banco.exec(`
   )
 `);
 
-console.log('Banco de dados pronto: conferencia.db');
-
 // Tabela de cortes: o que faltou e precisa ser cortado do pedido no Sankhya
 banco.exec(`
   CREATE TABLE IF NOT EXISTS cortes (
@@ -41,3 +40,14 @@ banco.exec(`
     feito_em   TEXT
   )
 `);
+
+// Tabela de faturamentos: guarda quando cada carga foi faturada (e se foi simulação)
+banco.exec(`
+  CREATE TABLE IF NOT EXISTS faturamentos (
+    carga       INTEGER PRIMARY KEY,
+    modo        TEXT NOT NULL,
+    faturado_em TEXT DEFAULT (datetime('now', 'localtime'))
+  )
+`);
+
+console.log('Banco de dados pronto: conferencia.db');

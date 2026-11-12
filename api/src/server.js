@@ -11,11 +11,12 @@ import {
   dataFinalizacao,
 } from './conferencia.js';
 import {
-  registrarCorte,     // ⭐
-  quantidadeCortada,  // ⭐
-  listarCortes,       // ⭐
-  marcarCorteFeito,   // ⭐
+  registrarCorte,
+  quantidadeCortada,
+  listarCortes,
+  marcarCorteFeito,
 } from './cortes.js';
+import { registrarFaturamento, situacaoFaturamento } from './faturamento.js'; // ⭐
 
 const app = express();
 const PORTA = 3000;
@@ -139,7 +140,7 @@ app.get('/cargas/:numero/conferencia', async (req, res) => {
         ...item,
         CONFERIDO: conferido,
         FALTA: item.QTDESPERADA - conferido,
-        CORTADO: quantidadeCortada(Number(numero), Number(item.CODPROD)), // ⭐
+        CORTADO: quantidadeCortada(Number(numero), Number(item.CODPROD)),
       };
     });
 
@@ -227,7 +228,7 @@ app.post('/cargas/:numero/finalizar', (req, res) => {
   }
 });
 
-// ⭐ Registra um corte: { "codprod": 101, "quantidade": 6, "motivo": "Sem estoque" }
+// Registra um corte: { "codprod": 101, "quantidade": 6, "motivo": "Sem estoque" }
 app.post('/cargas/:numero/cortes', async (req, res) => {
   const numero = req.params.numero;
   const codprod = Number(req.body?.codprod);
@@ -287,7 +288,7 @@ app.post('/cargas/:numero/cortes', async (req, res) => {
   }
 });
 
-// ⭐ Lista os cortes: /cortes (todos), /cortes?status=A_FAZER ou /cortes?status=FEITO
+// Lista os cortes: /cortes (todos), /cortes?status=A_FAZER ou /cortes?status=FEITO
 app.get('/cortes', (req, res) => {
   const status = req.query.status || '';
 
@@ -303,7 +304,7 @@ app.get('/cortes', (req, res) => {
   }
 });
 
-// ⭐ Marca um corte como feito (ajustado no Sankhya)
+// Marca um corte como feito (ajustado no Sankhya)
 app.post('/cortes/:id/feito', (req, res) => {
   const id = req.params.id;
 
@@ -319,6 +320,87 @@ app.post('/cortes/:id/feito', (req, res) => {
     res.json({ ok: true, id: Number(id) });
   } catch (erro) {
     console.error('Erro ao marcar corte como feito:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ⭐ Lista as cargas para faturar, com a situação da conferência e do faturamento
+app.get('/faturamento', async (req, res) => {
+  const de = req.query.de || diasAtras(7);
+  const ate = req.query.ate || diasAtras(0);
+  const numero = req.query.numero || '';
+
+  const formatoData = /^\d{4}-\d{2}-\d{2}$/;
+  if (!formatoData.test(de) || !formatoData.test(ate)) {
+    return res.status(400).json({ ok: false, erro: 'Data inválida. Use o formato AAAA-MM-DD.' });
+  }
+  if (numero && !/^\d{1,10}$/.test(numero)) {
+    return res.status(400).json({ ok: false, erro: 'Número da carga inválido.' });
+  }
+
+  try {
+    const cargas = await listarCargas({ de, ate, numero });
+
+    const resultado = cargas.map((carga) => {
+      const finalizadaEm = dataFinalizacao(Number(carga.ORDEMCARGA));
+      const faturamento = situacaoFaturamento(Number(carga.ORDEMCARGA));
+      return {
+        ...carga,
+        CONFERIDA: Boolean(finalizadaEm),
+        FATURADA: Boolean(faturamento),
+        MODO_FATURAMENTO: faturamento?.modo ?? null,
+        FATURADA_EM: faturamento?.faturado_em ?? null,
+      };
+    });
+
+    res.json({ ok: true, base: BASE, de, ate, cargas: resultado });
+  } catch (erro) {
+    console.error('Erro ao listar cargas para faturar:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ⭐ Fatura as cargas escolhidas: { "cargas": [1001, 1002] }
+app.post('/faturamento', (req, res) => {
+  const lista = req.body?.cargas;
+
+  // Tem que ser uma lista de 1 a 50 números de carga
+  if (!Array.isArray(lista) || lista.length === 0 || lista.length > 50) {
+    return res.status(400).json({ ok: false, erro: 'Escolha de 1 a 50 cargas.' });
+  }
+  if (!lista.every((n) => /^\d{1,10}$/.test(String(n)))) {
+    return res.status(400).json({ ok: false, erro: 'Número de carga inválido na lista.' });
+  }
+
+  // Por enquanto, só existe o modo simulação (dados falsos ligados)
+  const simulacao = process.env.USAR_DADOS_FALSOS === 'SIM';
+  if (!simulacao) {
+    return res.status(501).json({
+      ok: false,
+      erro: 'O faturamento real no Sankhya ainda não foi feito. Ligue os dados falsos para simular.',
+    });
+  }
+
+  try {
+    // Uma resposta para cada carga: faturou, já estava faturada ou não estava conferida
+    const resultados = lista.map((n) => {
+      const carga = Number(n);
+
+      if (!dataFinalizacao(carga)) {
+        return { carga, ok: false, mensagem: 'Não conferida: finalize a conferência antes.' };
+      }
+
+      const registrou = registrarFaturamento(carga, 'SIMULACAO');
+      if (!registrou) {
+        return { carga, ok: false, mensagem: 'Já estava faturada.' };
+      }
+
+      return { carga, ok: true, mensagem: 'Faturada (simulação).' };
+    });
+
+    res.json({ ok: true, simulacao, resultados });
+  } catch (erro) {
+    console.error('Erro ao faturar:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
   }
 });
