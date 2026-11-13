@@ -99,3 +99,20 @@ adicionarColuna('cortes', 'modo', 'TEXT');
 adicionarColuna('cortes', 'observacao', 'TEXT');
 
 console.log('Banco de dados pronto: conferencia.db');
+
+// Andamento do faturamento real, pedido por pedido
+banco.exec(`
+  CREATE TABLE IF NOT EXISTS fat_pedidos (
+    nunota        INTEGER PRIMARY KEY,
+    carga         INTEGER NOT NULL,
+    cliente       TEXT,
+    status        TEXT NOT NULL,
+    etapa         TEXT,
+    mensagem      TEXT,
+    nunota_56     INTEGER,
+    nunota_26     INTEGER,
+    nunota_32     INTEGER,
+    feito_por     INTEGER,
+    atualizado_em TEXT DEFAULT (datetime('now', 'localtime'))
+  )
+`);

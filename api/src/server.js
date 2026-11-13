@@ -20,6 +20,7 @@ import {
 import { registrarFaturamento, situacaoFaturamento } from './faturamento.js';
 import { entrar, sair, usuarioDaSessao } from './auth.js';
 import { pedidosDoProduto, cortarNoSankhya } from './corte-sankhya.js'; // ⭐ cortarNoSankhya
+import { faturarCargaNoSankhya, andamentoDaCarga } from './faturamento-sankhya.js'; // ⭐ faturamento real
 
 const app = express();
 const PORTA = 3000;
@@ -506,6 +507,27 @@ app.get('/faturamento', async (req, res) => {
   }
 });
 
+// ⭐ Cargas que estão sendo faturadas AGORA (para não faturar a mesma 2 vezes ao mesmo tempo)
+const cargasFaturando = new Set();
+
+// ⭐ Fatura UMA carga de verdade no Sankhya (roda "por trás", sem a tela esperar)
+async function faturarDeVerdade(carga, usuarioId) {
+  cargasFaturando.add(carga);
+  try {
+    const resumo = await faturarCargaNoSankhya(carga, usuarioId);
+    console.log(`Faturamento da carga ${carga}:`, resumo);
+
+    // Só marca a carga como FATURADA quando TODOS os pedidos deram certo
+    if (resumo.erros === 0) {
+      registrarFaturamento(carga, 'SANKHYA', usuarioId);
+    }
+  } catch (erro) {
+    console.error(`Erro ao faturar a carga ${carga}:`, erro);
+  } finally {
+    cargasFaturando.delete(carga);
+  }
+}
+
 // Fatura as cargas escolhidas: { "cargas": [1001, 1002] }
 app.post('/faturamento', (req, res) => {
   const lista = req.body?.cargas;
@@ -518,30 +540,40 @@ app.post('/faturamento', (req, res) => {
     return res.status(400).json({ ok: false, erro: 'Número de carga inválido na lista.' });
   }
 
-  // Por enquanto, só existe o modo simulação (dados falsos ligados)
   const simulacao = process.env.USAR_DADOS_FALSOS === 'SIM';
-  if (!simulacao) {
-    return res.status(501).json({
+
+  // ⭐ Trava de segurança: só grava no Sankhya na base de TESTE
+  if (!simulacao && !PODE_GRAVAR) {
+    return res.status(403).json({
       ok: false,
-      erro: 'O faturamento real no Sankhya ainda não foi feito. Ligue os dados falsos para simular.',
+      erro: `Faturar está travado na base ${BASE}. Só a base de TESTE pode gravar.`,
     });
   }
 
   try {
-    // Uma resposta para cada carga: faturou, já estava faturada ou não estava conferida
+    // Uma resposta para cada carga
     const resultados = lista.map((n) => {
       const carga = Number(n);
 
       if (!dataFinalizacao(carga)) {
         return { carga, ok: false, mensagem: 'Não conferida: finalize a conferência antes.' };
       }
-
-      const registrou = registrarFaturamento(carga, 'SIMULACAO', req.usuario.id); // quem faturou
-      if (!registrou) {
+      if (situacaoFaturamento(carga)) {
         return { carga, ok: false, mensagem: 'Já estava faturada.' };
       }
 
-      return { carga, ok: true, mensagem: 'Faturada (simulação).' };
+      // Modo simulação (dados falsos): só anota, não fala com o Sankhya
+      if (simulacao) {
+        registrarFaturamento(carga, 'SIMULACAO', req.usuario.id);
+        return { carga, ok: true, mensagem: 'Faturada (simulação).' };
+      }
+
+      // ⭐ Modo real: começa a faturar no Sankhya e responde na hora
+      if (cargasFaturando.has(carga)) {
+        return { carga, ok: false, mensagem: 'Já está sendo faturada agora.' };
+      }
+      faturarDeVerdade(carga, req.usuario.id); // sem await: continua sozinho
+      return { carga, ok: true, mensagem: 'Faturamento começou no Sankhya.' };
     });
 
     res.json({ ok: true, simulacao, resultados });
@@ -549,6 +581,22 @@ app.post('/faturamento', (req, res) => {
     console.error('Erro ao faturar:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
   }
+});
+
+// ⭐ Andamento do faturamento real de uma carga, pedido por pedido
+app.get('/faturamento/:carga/andamento', (req, res) => {
+  const { carga } = req.params;
+
+  if (!/^\d{1,10}$/.test(carga)) {
+    return res.status(400).json({ ok: false, erro: 'Número da carga inválido.' });
+  }
+
+  res.json({
+    ok: true,
+    carga: Number(carga),
+    faturando: cargasFaturando.has(Number(carga)),
+    pedidos: andamentoDaCarga.all(Number(carga)),
+  });
 });
 
 // Pedidos da carga que têm um produto em falta (para escolher de onde cortar)
