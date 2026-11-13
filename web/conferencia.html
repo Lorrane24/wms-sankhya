@@ -134,11 +134,17 @@
             </div>
         </dialog>
 
-        <!-- JANELA: cortar um produto que faltou -->
+                <!-- JANELA: cortar um produto que faltou -->
         <dialog id="janela-corte">
             <form id="form-corte">
                 <h2>Cortar do pedido</h2>
                 <p id="corte-produto">Produto</p>
+                <div class="campo">
+                    <label for="corte-pedido">De qual pedido?</label>
+                    <select id="corte-pedido"></select>
+                </div>
+                <!-- Explica se o app vai cortar no Sankhya ou se fica "A fazer" -->
+                <p id="corte-aviso" role="status"></p>
                 <div class="campo">
                     <label for="corte-quantidade">Quantidade a cortar</label>
                     <input type="number" id="corte-quantidade" min="1" required>

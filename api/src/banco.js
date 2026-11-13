@@ -1,4 +1,4 @@
-// Banco de dados próprio da API (SQLite): guarda conferências, cortes e faturamentos.
+// Banco de dados próprio da API (SQLite): conferências, cortes, faturamentos e usuários.
 // ESTE ARQUIVO FICA EM: api/src/banco.js
 import { DatabaseSync } from 'node:sqlite';
 
@@ -49,5 +49,53 @@ banco.exec(`
     faturado_em TEXT DEFAULT (datetime('now', 'localtime'))
   )
 `);
+
+// Tabela de usuários: quem pode entrar no app (a senha fica só como hash)
+banco.exec(`
+  CREATE TABLE IF NOT EXISTS usuarios (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome       TEXT NOT NULL,
+    login      TEXT NOT NULL UNIQUE,
+    senha_hash TEXT NOT NULL,
+    ativo      INTEGER NOT NULL DEFAULT 1,
+    criado_em  TEXT DEFAULT (datetime('now', 'localtime'))
+  )
+`);
+
+// Tabela de sessões: as "pulseiras" de quem está logado
+banco.exec(`
+  CREATE TABLE IF NOT EXISTS sessoes (
+    token      TEXT PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    criado_em  TEXT DEFAULT (datetime('now', 'localtime')),
+    expira_em  TEXT NOT NULL
+  )
+`);
+
+// ========== MIGRAÇÕES: colunas novas em tabelas que já existem ==========
+
+// Acrescenta uma coluna, só se ela ainda não existir
+function adicionarColuna(tabela, coluna, tipo) {
+  const colunas = banco.prepare(`PRAGMA table_info(${tabela})`).all();
+  const jaExiste = colunas.some((c) => c.name === coluna);
+
+  if (!jaExiste) {
+    banco.exec(`ALTER TABLE ${tabela} ADD COLUMN ${coluna} ${tipo}`);
+    console.log(`Migração: coluna "${coluna}" criada na tabela "${tabela}"`);
+  }
+}
+
+// Quem fez cada coisa (guarda o id do usuário)
+adicionarColuna('bipagens', 'usuario_id', 'INTEGER');
+adicionarColuna('conferencias', 'finalizada_por', 'INTEGER');
+adicionarColuna('cortes', 'criado_por', 'INTEGER');
+adicionarColuna('cortes', 'feito_por', 'INTEGER');
+adicionarColuna('faturamentos', 'faturado_por', 'INTEGER');
+
+// Corte de verdade no Sankhya: de qual pedido/item e o que aconteceu
+adicionarColuna('cortes', 'nunota', 'INTEGER');
+adicionarColuna('cortes', 'sequencia', 'INTEGER');
+adicionarColuna('cortes', 'modo', 'TEXT');
+adicionarColuna('cortes', 'observacao', 'TEXT');
 
 console.log('Banco de dados pronto: conferencia.db');

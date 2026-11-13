@@ -1,9 +1,10 @@
 // Consultas de cargas (ordens de carga) no Sankhya.
+// ESTE ARQUIVO FICA EM: api/src/cargas.js
 import { consultarSql } from './sankhya.js';
 import { CARGAS_FALSAS, ITENS_FALSOS } from './dados-falsos.js';
 
 // Filtro dos pedidos da empresa 501
-const FILTRO_PEDIDOS = "C.CODEMP = 501 AND C.TIPMOV IN ('P','V') AND C.CODTIPOPER <> 26";
+export const FILTRO_PEDIDOS = "C.CODEMP = 501 AND C.TIPMOV IN ('P','V') AND C.CODTIPOPER <> 26"; // ⭐ export
 
 // Busca as cargas de um período, ou uma carga pelo número.
 // de e ate chegam no formato AAAA-MM-DD; numero é opcional.

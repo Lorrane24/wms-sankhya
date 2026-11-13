@@ -58,8 +58,11 @@ function criarLinha(carga) {
     ? '<span class="situacao conferida">Conferida</span>'
     : '<span class="situacao naoconferida">Não conferida</span>';
 
+  // ⭐ Quem faturou (vazio nas ações antigas, de antes do login)
+  const faturadaPor = carga.FATURADA_POR ? ` por ${carga.FATURADA_POR}` : '';
+
   const faturamento = carga.FATURADA
-    ? `<span class="situacao conferida">Faturada${carga.MODO_FATURAMENTO === 'SIMULACAO' ? ' (simulação)' : ''}</span> <small>${escapar(formatarDataHora(carga.FATURADA_EM))}</small>`
+    ? `<span class="situacao conferida">Faturada${carga.MODO_FATURAMENTO === 'SIMULACAO' ? ' (simulação)' : ''}</span> <small>${escapar(formatarDataHora(carga.FATURADA_EM) + faturadaPor)}</small>`
     : '—';
 
   return `

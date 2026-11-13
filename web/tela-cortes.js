@@ -1,5 +1,5 @@
 // Tela de Cortes: lista os cortes e marca como feito.
-
+// ESTE ARQUIVO FICA EM: web/tela-cortes.js
 
 const filtroStatus = document.getElementById('filtro-status');
 const corpoCortes = document.getElementById('corpo-cortes');
@@ -12,6 +12,7 @@ const cancelarFeito = document.getElementById('cancelar-feito');
 const confirmarFeito = document.getElementById('confirmar-feito');
 
 let corteSelecionado = null; // o id do corte que está na janela agora
+let cortesNaTela = [];       // a lista que está na tela, para achar o corte no clique
 
 // Protege o HTML (o mesmo das outras telas)
 function escapar(texto) {
@@ -39,9 +40,13 @@ function mostrarMensagem(texto, deuCerto) {
 function criarLinha(corte) {
   const feito = corte.status === 'FEITO';
 
+  // ⭐ Quem cortou e quem marcou como feito (vazio nas ações antigas, de antes do login)
+  const feitoPor = corte.feito_por_nome ? ` por ${corte.feito_por_nome}` : '';
+  const criadoPor = corte.criado_por_nome ? `Cortado por ${corte.criado_por_nome}` : '';
+
   const situacao = feito
-    ? `<span class="situacao conferida">Feito</span> <small>${escapar(formatarDataHora(corte.feito_em))}</small>`
-    : '<span class="situacao naoconferida">A fazer</span>';
+    ? `<span class="situacao conferida">Feito</span> <small>${escapar(formatarDataHora(corte.feito_em) + feitoPor)}</small>`
+    : `<span class="situacao naoconferida">A fazer</span> <small>${escapar(criadoPor)}</small>`;
 
   const botaoFeito = feito
     ? ''
@@ -60,9 +65,6 @@ function criarLinha(corte) {
       </td>
     </tr>`;
 }
-
-// Guarda a lista que está na tela, para achar o corte no clique
-let cortesNaTela = [];
 
 // Busca os cortes na API (conforme o filtro) e mostra na tabela
 async function carregarCortes() {

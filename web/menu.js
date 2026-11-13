@@ -1,22 +1,52 @@
-// Abre e fecha o menu lateral no celular.
+// Menu lateral: abre e fecha no celular, e mostra quem está logado (com o botão Sair).
+// ESTE ARQUIVO FICA EM: web/menu.js
 
-// 1. Achar o botão e o menu na página, pelo id
 const botaoMenu = document.getElementById('botao-menu');
 const menu = document.getElementById('menu');
 
-// 2. Esperar alguém tocar no botão
-botaoMenu.addEventListener('click', () => {
-  // 3. Liga ou desliga a classe "aberto"
+// Abre e fecha o menu no celular (botão ☰)
+botaoMenu.addEventListener('click', (evento) => {
+  evento.stopPropagation(); // não deixa esse clique "chegar" no documento
   menu.classList.toggle('aberto');
 });
 
-// 4. Fechar o menu ao tocar fora dele
+// Clicou fora do menu? Fecha
 document.addEventListener('click', (evento) => {
-  const menuAberto = menu.classList.contains('aberto');
-  const tocouNoMenu = menu.contains(evento.target);
-  const tocouNoBotao = botaoMenu.contains(evento.target);
-
-  if (menuAberto && !tocouNoMenu && !tocouNoBotao) {
+  if (menu.classList.contains('aberto') && !menu.contains(evento.target)) {
     menu.classList.remove('aberto');
   }
 });
+
+// Sair: rasga a pulseira na API e volta para o login
+async function sairDoApp() {
+  await fetch('/logout', { method: 'POST' });
+  window.location.href = 'login.html';
+}
+
+// Pergunta à API quem está logado e coloca o nome e o botão Sair no fim do menu
+async function mostrarUsuario() {
+  try {
+    const resposta = await fetch('/eu');
+    const dados = await resposta.json();
+    if (!dados.ok || !dados.usuario) return;
+
+    const caixa = document.createElement('div');
+    caixa.className = 'menu-usuario';
+
+    const nome = document.createElement('span');
+    nome.textContent = `👤 ${dados.usuario.nome}`;
+
+    const botaoSair = document.createElement('button');
+    botaoSair.type = 'button';
+    botaoSair.className = 'botao botao-contorno';
+    botaoSair.textContent = 'Sair';
+    botaoSair.addEventListener('click', sairDoApp);
+
+    caixa.append(nome, botaoSair);
+    menu.append(caixa);
+  } catch (erro) {
+    console.error('Erro ao buscar o usuário logado:', erro);
+  }
+}
+
+mostrarUsuario();

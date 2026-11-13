@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar · Conferência de Carga</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="tela-login.js" defer></script>
+</head>
+<body>
+
+    <main class="tela-login">
+
+        <header class="cabecalho">
+            <h1>Conferência de Carga</h1>
+            <p>Entre com o seu usuário para continuar.</p>
+        </header>
+
+        <form id="form-login" class="cartao">
+            <div class="campo">
+                <label for="campo-login">Login</label>
+                <input id="campo-login" autocomplete="username" autofocus required>
+            </div>
+            <div class="campo">
+                <label for="campo-senha">Senha</label>
+                <input type="password" id="campo-senha" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="botao botao-principal">Entrar</button>
+            <p id="mensagem-login" role="status"></p>
+        </form>
+
+    </main>
+
+</body>
+</html>
