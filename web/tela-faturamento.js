@@ -16,6 +16,14 @@ const textoConfirmar = document.getElementById('texto-confirmar');
 const cancelarFaturamento = document.getElementById('cancelar-faturamento');
 const confirmarFaturar = document.getElementById('confirmar-faturar');
 
+// ⭐ Caixa do andamento: o próprio JS cria, logo abaixo da mensagem (não precisa mexer no HTML)
+const caixaAndamento = document.createElement('div');
+caixaAndamento.id = 'andamento-faturamento';
+mensagem.after(caixaAndamento);
+
+// ⭐ Cargas que estamos acompanhando (número → temporizador)
+const acompanhando = new Map();
+
 // Protege o HTML (o mesmo das outras telas)
 function escapar(texto) {
   return String(texto ?? '')
@@ -58,7 +66,7 @@ function criarLinha(carga) {
     ? '<span class="situacao conferida">Conferida</span>'
     : '<span class="situacao naoconferida">Não conferida</span>';
 
-  // ⭐ Quem faturou (vazio nas ações antigas, de antes do login)
+  // Quem faturou (vazio nas ações antigas, de antes do login)
   const faturadaPor = carga.FATURADA_POR ? ` por ${carga.FATURADA_POR}` : '';
 
   const faturamento = carga.FATURADA
@@ -75,7 +83,10 @@ function criarLinha(carga) {
       <td data-label="Clientes">${escapar(carga.CLIENTES)}</td>
       <td data-label="Conferência">${conferencia}</td>
       <td data-label="Faturamento">${faturamento}</td>
-      <td class="celula-acoes"><a href="conferencia.html?carga=${numero}" class="botao botao-contorno">Ver</a></td>
+      <td class="celula-acoes">
+        <a href="conferencia.html?carga=${numero}" class="botao botao-contorno">Ver</a>
+        ${carga.CONFERIDA && carga.MODO_FATURAMENTO !== 'SIMULACAO' ? `<button type="button" class="botao botao-contorno" data-andamento="${numero}">Andamento</button>` : ''}
+      </td>
     </tr>`;
 }
 
@@ -124,6 +135,86 @@ async function carregarCargas() {
   atualizarSelecao();
 }
 
+// ⭐ Uma linha da tabela de andamento (um pedido)
+function linhaAndamento(p) {
+  const nomes = {
+    PENDENTE: 'Esperando',
+    PROCESSANDO: 'Faturando…',
+    CONCLUIDO: '✓ Concluído',
+    ERRO: '✗ Erro',
+  };
+  const classe = p.status === 'CONCLUIDO' ? 'conferida' : p.status === 'ERRO' ? 'naoconferida' : '';
+  const erro = p.mensagem
+    ? `<tr><td colspan="7" class="mensagem-erro">${escapar(p.mensagem)}</td></tr>`
+    : '';
+
+  return `
+    <tr>
+      <td data-label="Pedido"><strong>${escapar(p.nunota)}</strong></td>
+      <td data-label="Cliente">${escapar(p.cliente)}</td>
+      <td data-label="Situação"><span class="situacao ${classe}">${nomes[p.status] ?? escapar(p.status)}</span></td>
+      <td data-label="Etapa">${escapar(p.etapa)}</td>
+      <td data-label="Nota 56">${escapar(p.nunota_56 ?? '—')}</td>
+      <td data-label="Cópia 26">${escapar(p.nunota_26 ?? '—')}</td>
+      <td data-label="Nota 32">${escapar(p.nunota_32 ?? '—')}</td>
+    </tr>${erro}`;
+}
+
+// ⭐ Mostra (ou atualiza) o quadro de uma carga
+function mostrarAndamento(dados) {
+  const id = `andamento-${dados.carga}`;
+  let quadro = document.getElementById(id);
+  if (!quadro) {
+    quadro = document.createElement('section');
+    quadro.id = id;
+    caixaAndamento.append(quadro);
+  }
+
+  const titulo = dados.faturando ? 'faturando no Sankhya…' : 'parado';
+  const corpo = dados.pedidos.length
+    ? dados.pedidos.map(linhaAndamento).join('')
+    : '<tr><td colspan="7">Ainda não começou.</td></tr>';
+
+  quadro.innerHTML = `
+    <h3>Carga ${escapar(dados.carga)} · ${titulo}</h3>
+    <table>
+      <thead>
+        <tr><th>Pedido</th><th>Cliente</th><th>Situação</th><th>Etapa</th><th>Nota 56</th><th>Cópia 26</th><th>Nota 32</th></tr>
+      </thead>
+      <tbody>${corpo}</tbody>
+    </table>`;
+}
+
+// ⭐ Pergunta à API como está o faturamento de uma carga
+async function buscarAndamento(carga) {
+  const resposta = await fetch(`/faturamento/${carga}/andamento`);
+  const dados = await resposta.json();
+  if (!dados.ok) throw new Error(dados.erro);
+  mostrarAndamento(dados);
+  return dados;
+}
+
+// ⭐ Acompanha a carga: pergunta a cada 3 segundos até terminar
+function acompanhar(carga) {
+  if (acompanhando.has(carga)) return; // já está acompanhando
+
+  const verificar = async () => {
+    try {
+      const dados = await buscarAndamento(carga);
+      if (!dados.faturando) {
+        clearInterval(acompanhando.get(carga));
+        acompanhando.delete(carga);
+        await carregarCargas(); // atualiza a tabela (Faturada ou não)
+      }
+    } catch (erro) {
+      console.error('Erro ao ver o andamento:', erro);
+    }
+  };
+
+  acompanhando.set(carga, setInterval(verificar, 3000));
+  verificar(); // primeira vez já
+}
+
 // Abre a janela de confirmação
 function abrirConfirmacao() {
   const quantas = cargasMarcadas().length;
@@ -149,10 +240,17 @@ async function faturar() {
     const problemas = dados.resultados.filter((r) => !r.ok);
 
     if (problemas.length === 0) {
-      mostrarMensagem(`✓ ${certas} carga(s) faturada(s)${dados.simulacao ? ' (simulação)' : ''}.`, true);
+      mostrarMensagem(dados.simulacao
+        ? `✓ ${certas} carga(s) faturada(s) (simulação).`
+        : `✓ Faturamento começou em ${certas} carga(s). Acompanhe abaixo.`, true);
     } else {
       const detalhe = problemas.map((p) => `${p.carga}: ${p.mensagem}`).join(' · ');
-      mostrarMensagem(`${certas} faturada(s). Com problema: ${detalhe}`, false);
+      mostrarMensagem(`${certas} começaram. Com problema: ${detalhe}`, false);
+    }
+
+    // ⭐ Modo real: acompanha as cargas que começaram a faturar
+    if (!dados.simulacao) {
+      dados.resultados.filter((r) => r.ok).forEach((r) => acompanhar(r.carga));
     }
 
     await carregarCargas();
@@ -171,6 +269,13 @@ formBusca.addEventListener('submit', (evento) => {
 
 // Marcou ou desmarcou alguma caixinha (delegação de evento)
 corpoTabela.addEventListener('change', atualizarSelecao);
+
+// ⭐ Clicou em Andamento numa linha
+corpoTabela.addEventListener('click', (evento) => {
+  const botao = evento.target.closest('[data-andamento]');
+  if (!botao) return;
+  acompanhar(Number(botao.dataset.andamento));
+});
 
 // Marcar todas
 marcarTodas.addEventListener('change', () => {
